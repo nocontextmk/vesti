@@ -193,16 +193,9 @@
             font-weight: 500;
         }
         
-        .remove-btn {
-            background: none;
-            border: none;
-            color: #e74c3c;
-            cursor: pointer;
+        .time-ago {
+            color: #7f8c8d;
             font-size: 0.75rem;
-        }
-        
-        .remove-btn:hover {
-            text-decoration: underline;
         }
         
         /* Footer стилови */
@@ -241,6 +234,12 @@
             margin-left: auto;
             margin-right: auto;
             line-height: 1.4;
+        }
+        
+        .auto-refresh-info {
+            font-size: 0.8rem;
+            color: #bdc3c7;
+            margin-top: 0.5rem;
         }
         
         .copyright {
@@ -354,41 +353,6 @@
         .reset-btn:hover {
             background-color: rgba(255,255,255,0.1);
         }
-        
-        /* Auto-refresh индикатор */
-        .refresh-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--accent);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .refresh-timer {
-            font-weight: bold;
-        }
-        
-        .refresh-spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -423,10 +387,12 @@
                     <a href="#" id="contact-link">Контакт</a>
                     <a href="#" id="reset-link">Ресетирај портали</a>
                     <a href="#" id="refresh-now-link">Ажурирај сега</a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
                 </div>
                 <div class="disclaimer">
                     <p><strong>Оваа страна е open source и непрофитна.</strong> Сите вести се преземаат од јавно достапни извори и се прикажуваат единствено за информативни цели. Секој портал може да се избрише од страната по барање.</p>
+                </div>
+                <div class="auto-refresh-info">
+                    <p>Страната автоматски се ажурира на секои 15 минути за најнови вести</p>
                 </div>
                 <div class="copyright">
                     <p>&copy; 2023 Вести Агрегатор - Македонија. Сите права се задржани.</p>
@@ -437,12 +403,6 @@
 
     <!-- Нотификации -->
     <div id="notification" class="notification"></div>
-    
-    <!-- Auto-refresh индикатор -->
-    <div id="refresh-indicator" class="refresh-indicator" style="display: none;">
-        <div class="refresh-spinner"></div>
-        <span>Следно ажурирање за: <span class="refresh-timer">15:00</span></span>
-    </div>
 
     <script>
         // Дефинирање на категории и портали
@@ -488,98 +448,91 @@
             ]
         };
 
-        // Пример вести за секој портал со реални линкови
+        // Пример вести за секој портал со реални линкови и времиња
         const portalNews = {
             "24 Вести": [
-                { title: "Нова влада ја презеде функцијата по изборите", link: "https://24vesti.mk" },
-                { title: "Економски раст од 3.2% во првиот квартал", link: "https://24vesti.mk" },
-                { title: "Реформа во здравственото осигурање", link: "https://24vesti.mk" },
-                { title: "Нови инвестиции во инфраструктура", link: "https://24vesti.mk" },
-                { title: "Промени во даночниот систем", link: "https://24vesti.mk" }
+                { title: "Нова влада ја презеде функцијата по изборите", link: "https://24vesti.mk", time: 45 },
+                { title: "Економски раст од 3.2% во првиот квартал", link: "https://24vesti.mk", time: 120 },
+                { title: "Реформа во здравственото осигурање", link: "https://24vesti.mk", time: 30 },
+                { title: "Нови инвестиции во инфраструктура", link: "https://24vesti.mk", time: 90 },
+                { title: "Промени во даночниот систем", link: "https://24vesti.mk", time: 150 }
             ],
             "ТВ21": [
-                { title: "Интервју со претседателот", link: "https://tv21.tv" },
-                { title: "Нови инвестиции во инфраструктура", link: "https://tv21.tv" },
-                { title: "Културен фестивал во Скопје", link: "https://tv21.tv" },
-                { title: "Образовни реформи", link: "https://tv21.tv" },
-                { title: "Спортски настани", link: "https://tv21.tv" }
+                { title: "Интервју со претседателот", link: "https://tv21.tv", time: 25 },
+                { title: "Нови инвестиции во инфраструктура", link: "https://tv21.tv", time: 65 },
+                { title: "Културен фестивал во Скопје", link: "https://tv21.tv", time: 40 },
+                { title: "Образовни реформи", link: "https://tv21.tv", time: 85 },
+                { title: "Спортски настани", link: "https://tv21.tv", time: 15 }
             ],
             "Макфакс": [
-                { title: "Анализа на пазарот на труд", link: "https://makfax.com.mk" },
-                { title: "Промени во даночниот систем", link: "https://makfax.com.mk" },
-                { title: "Спортски успеси на домашни атлетичари", link: "https://makfax.com.mk" },
-                { title: "Економски извештај", link: "https://makfax.com.mk" },
-                { title: "Политички анализи", link: "https://makfax.com.mk" }
+                { title: "Анализа на пазарот на труд", link: "https://makfax.com.mk", time: 55 },
+                { title: "Промени во даночниот систем", link: "https://makfax.com.mk", time: 125 },
+                { title: "Спортски успеси на домашни атлетичари", link: "https://makfax.com.mk", time: 35 },
+                { title: "Економски извештај", link: "https://makfax.com.mk", time: 95 },
+                { title: "Политички анализи", link: "https://makfax.com.mk", time: 75 }
             ],
             "Спортклуб": [
-                { title: "ФК Вардар со нова победа", link: "https://sportclub.mk" },
-                { title: "Македонски кошаркар во странство", link: "https://sportclub.mk" },
-                { title: "Подготовки за Олимпијадата", link: "https://sportclub.mk" },
-                { title: "Тениски турнир во Скопје", link: "https://sportclub.mk" },
-                { title: "Резултати од првенството", link: "https://sportclub.mk" }
+                { title: "ФК Вардар со нова победа", link: "https://sportclub.mk", time: 20 },
+                { title: "Македонски кошаркар во странство", link: "https://sportclub.mk", time: 50 },
+                { title: "Подготовки за Олимпијадата", link: "https://sportclub.mk", time: 110 },
+                { title: "Тениски турнир во Скопје", link: "https://sportclub.mk", time: 80 },
+                { title: "Резултати од првенството", link: "https://sportclub.mk", time: 10 }
             ],
             "IT.mk": [
-                { title: "Нова технолошка компанија во Македонија", link: "https://it.mk" },
-                { title: "Стартап финансиран од ЕУ", link: "https://it.mk" },
-                { title: "Дигитална трансформација на малите бизниси", link: "https://it.mk" },
-                { title: "Технолошки иновации", link: "https://it.mk" },
-                { title: "Образование во ИТ секторот", link: "https://it.mk" }
+                { title: "Нова технолошка компанија во Македонија", link: "https://it.mk", time: 45 },
+                { title: "Стартап финансиран од ЕУ", link: "https://it.mk", time: 100 },
+                { title: "Дигитална трансформација на малите бизниси", link: "https://it.mk", time: 30 },
+                { title: "Технолошки иновации", link: "https://it.mk", time: 70 },
+                { title: "Образование во ИТ секторот", link: "https://it.mk", time: 120 }
             ],
             "Метео Аларм": [
-                { title: "Нестабилно време наредните денови", link: "https://meteoalarm.mk" },
-                { title: "Топлотен бран во јули", link: "https://meteoalarm.mk" },
-                { title: "Пролетни температури во март", link: "https://meteoalarm.mk" },
-                { title: "Временска прогноза за викенд", link: "https://meteoalarm.mk" },
-                { title: "Мерки за време на екстремни временски услови", link: "https://meteoalarm.mk" }
+                { title: "Нестабилно време наредните денови", link: "https://meteoalarm.mk", time: 5 },
+                { title: "Топлотен бран во јули", link: "https://meteoalarm.mk", time: 180 },
+                { title: "Пролетни температури во март", link: "https://meteoalarm.mk", time: 240 },
+                { title: "Временска прогноза за викенд", link: "https://meteoalarm.mk", time: 60 },
+                { title: "Мерки за време на екстремни временски услови", link: "https://meteoalarm.mk", time: 30 }
             ],
             "Deutsche Welle": [
-                { title: "ЕУ разговори за проширување", link: "https://www.dw.com/mk" },
-                { title: "Глобални економски трендови", link: "https://www.dw.com/mk" },
-                { title: "Културна размена со Германија", link: "https://www.dw.com/mk" },
-                { title: "Политички анализи", link: "https://www.dw.com/mk" },
-                { title: "Економски извештаи", link: "https://www.dw.com/mk" }
+                { title: "ЕУ разговори за проширување", link: "https://www.dw.com/mk", time: 90 },
+                { title: "Глобални економски трендови", link: "https://www.dw.com/mk", time: 150 },
+                { title: "Културна размена со Германија", link: "https://www.dw.com/mk", time: 65 },
+                { title: "Политички анализи", link: "https://www.dw.com/mk", time: 110 },
+                { title: "Економски извештаи", link: "https://www.dw.com/mk", time: 85 }
             ],
             "Нова ТВ": [
-                { title: "Вести од Нова ТВ", link: "https://nova.mk" },
-                { title: "Интервјуа и репортажи", link: "https://nova.mk" },
-                { title: "Актуелни настани", link: "https://nova.mk" },
-                { title: "Документарни емисии", link: "https://nova.mk" },
-                { title: "Спортски програми", link: "https://nova.mk" }
+                { title: "Вести од Нова ТВ", link: "https://nova.mk", time: 25 },
+                { title: "Интервјуа и репортажи", link: "https://nova.mk", time: 45 },
+                { title: "Актуелни настани", link: "https://nova.mk", time: 15 },
+                { title: "Документарни емисии", link: "https://nova.mk", time: 90 },
+                { title: "Спортски програми", link: "https://nova.mk", time: 35 }
             ],
             "Сакам да кажам": [
-                { title: "Мислења и коментари", link: "https://sakamnakazham.mk" },
-                { title: "Публицистика и анализи", link: "https://sakamnakazham.mk" },
-                { title: "Општествени дискусии", link: "https://sakamnakazham.mk" },
-                { title: "Културни теми", link: "https://sakamnakazham.mk" },
-                { title: "Политички коментари", link: "https://sakamnakazham.mk" }
+                { title: "Мислења и коментари", link: "https://sakamnakazham.mk", time: 50 },
+                { title: "Публицистика и анализи", link: "https://sakamnakazham.mk", time: 120 },
+                { title: "Општествени дискусии", link: "https://sakamnakazham.mk", time: 75 },
+                { title: "Културни теми", link: "https://sakamnakazham.mk", time: 95 },
+                { title: "Политички коментари", link: "https://sakamnakazham.mk", time: 40 }
             ],
             "Кајгана": [
-                { title: "Рецепти и кулинарски совети", link: "https://kajgana.com" },
-                { title: "Здравје и исхрана", link: "https://kajgana.com" },
-                { title: "Сезонски рецепти", link: "https://kajgana.com" },
-                { title: "Вегетаријанска кујна", link: "https://kajgana.com" },
-                { title: "Традиционални јадења", link: "https://kajgana.com" }
-            ],
-            "IT.mk": [
-                { title: "Технолошки вести", link: "https://it.mk" },
-                { title: "Дигитални трендови", link: "https://it.mk" },
-                { title: "Технички совети", link: "https://it.mk" },
-                { title: "Софтверски развој", link: "https://it.mk" },
-                { title: "Иновации во технологијата", link: "https://it.mk" }
+                { title: "Рецепти и кулинарски совети", link: "https://kajgana.com", time: 180 },
+                { title: "Здравје и исхрана", link: "https://kajgana.com", time: 240 },
+                { title: "Сезонски рецепти", link: "https://kajgana.com", time: 120 },
+                { title: "Вегетаријанска кујна", link: "https://kajgana.com", time: 90 },
+                { title: "Традиционални јадења", link: "https://kajgana.com", time: 300 }
             ],
             "Авто Магазин": [
-                { title: "Нови модели автомобили", link: "https://automagazin.com.mk" },
-                { title: "Технички прегледи", link: "https://automagazin.com.mk" },
-                { title: "Безбедност во сообраќајот", link: "https://automagazin.com.mk" },
-                { title: "Електрични возила", link: "https://automagazin.com.mk" },
-                { title: "Совети за одржување", link: "https://automagazin.com.mk" }
+                { title: "Нови модели автомобили", link: "https://automagazin.com.mk", time: 60 },
+                { title: "Технички прегледи", link: "https://automagazin.com.mk", time: 150 },
+                { title: "Безбедност во сообраќајот", link: "https://automagazin.com.mk", time: 45 },
+                { title: "Електрични возила", link: "https://automagazin.com.mk", time: 85 },
+                { title: "Совети за одржување", link: "https://automagazin.com.mk", time: 110 }
             ],
             "Д-р Митов": [
-                { title: "Здравствени совети", link: "https://drmitov.com" },
-                { title: "Превенција на болести", link: "https://drmitov.com" },
-                { title: "Исхрана и вежбање", link: "https://drmitov.com" },
-                { title: "Ментално здравје", link: "https://drmitov.com" },
-                { title: "Современи третмани", link: "https://drmitov.com" }
+                { title: "Здравствени совети", link: "https://drmitov.com", time: 200 },
+                { title: "Превенција на болести", link: "https://drmitov.com", time: 140 },
+                { title: "Исхрана и вежбање", link: "https://drmitov.com", time: 90 },
+                { title: "Ментално здравје", link: "https://drmitov.com", time: 65 },
+                { title: "Современи третмани", link: "https://drmitov.com", time: 120 }
             ]
         };
 
@@ -587,8 +540,6 @@
         let activeCategory = "Македонија";
         let removedPortals = JSON.parse(localStorage.getItem('removedPortals')) || [];
         let refreshInterval;
-        let refreshTimer;
-        let refreshCountdown = 15 * 60; // 15 минути во секунди
 
         // Функција за прикажување на нотификации
         function showNotification(message, type = 'success') {
@@ -600,6 +551,16 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
+        }
+
+        // Функција за форматирање на времето
+        function formatTimeAgo(minutes) {
+            if (minutes < 60) {
+                return `${minutes} мин`;
+            } else {
+                const hours = Math.floor(minutes / 60);
+                return `${hours}Ч`;
+            }
         }
 
         // Функција за креирање на категориите во навигацијата
@@ -661,13 +622,14 @@
             // Прикажување на вести за секој портал
             portals.forEach(portal => {
                 const newsForPortal = portalNews[portal] || [
-                    { title: "Актуелни вести од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk" },
-                    { title: "Важни информации од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk" },
-                    { title: "Извештаи и новости од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk" }
+                    { title: "Актуелни вести од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk", time: Math.floor(Math.random() * 120) + 1 },
+                    { title: "Важни информации од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk", time: Math.floor(Math.random() * 120) + 1 },
+                    { title: "Извештаи и новости од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk", time: Math.floor(Math.random() * 120) + 1 }
                 ];
                 
                 // Прикажување на повеќе вести за секој портал
                 newsForPortal.forEach(newsItem => {
+                    const timeAgo = formatTimeAgo(newsItem.time);
                     newsHTML += `
                         <div class="news-card" data-portal="${portal}">
                             <div class="news-content">
@@ -677,9 +639,7 @@
                                 <p class="news-description">${getNewsDescription(portal, newsItem.title)}</p>
                                 <div class="news-meta">
                                     <span class="portal-name">${portal}</span>
-                                    <button class="remove-btn" data-portal="${portal}">
-                                        Избриши
-                                    </button>
+                                    <span class="time-ago">${timeAgo}</span>
                                 </div>
                             </div>
                         </div>
@@ -689,14 +649,6 @@
             
             newsHTML += `</div></div>`;
             newsContainer.innerHTML = newsHTML;
-            
-            // Додавање на event listeners за копчињата за бришење
-            document.querySelectorAll('.remove-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const portal = e.target.getAttribute('data-portal');
-                    removePortal(portal);
-                });
-            });
         }
 
         // Помошна функција за генерирање опис на вести
@@ -752,40 +704,11 @@
                 // Во реална ситуација, овде би се вчитале вистинските најнови вести
                 renderNews();
                 showNotification("Вестите се ажурирани успешно!", 'success');
-                
-                // Ресетирање на тајмерот
-                refreshCountdown = 15 * 60;
-                updateRefreshTimer();
             }, 1000);
-        }
-
-        // Функција за ажурирање на приказот на тајмерот
-        function updateRefreshTimer() {
-            const minutes = Math.floor(refreshCountdown / 60);
-            const seconds = refreshCountdown % 60;
-            const timerElement = document.querySelector('.refresh-timer');
-            
-            if (timerElement) {
-                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
         }
 
         // Функција за стартување на авто-освежување
         function startAutoRefresh() {
-            // Прикажување на индикаторот за авто-освежување
-            const refreshIndicator = document.getElementById('refresh-indicator');
-            refreshIndicator.style.display = 'flex';
-            
-            // Ажурирање на тајмерот на секоја секунда
-            refreshTimer = setInterval(() => {
-                refreshCountdown--;
-                updateRefreshTimer();
-                
-                if (refreshCountdown <= 0) {
-                    refreshNews();
-                }
-            }, 1000);
-            
             // Поставување на интервал за авто-освежување на секои 15 минути
             refreshInterval = setInterval(refreshNews, 15 * 60 * 1000);
         }
