@@ -3,43 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вести Агрегатор - Македонија</title>
+    <title>Вести Агрегатор</title>
     <style>
-        /* Основни стилови */
+        /* Google News стил со промени */
         :root {
-            --primary: #2c3e50;
-            --secondary: #7f8c8d;
-            --accent: #3498db;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --border: #bdc3c7;
-            --text: #2c3e50;
-            --background: #f9f9f9;
+            --primary: #1a73e8;
+            --text: #202124;
+            --secondary: #5f6368;
+            --border: #dadce0;
+            --background: #ffffff;
+            --card-bg: #ffffff;
+            --hover: #f8f9fa;
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
         }
         
         body {
-            background-color: var(--background);
+            background-color: #f8f9fa;
             color: var(--text);
             line-height: 1.5;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
         
-        /* Header стилови */
+        /* Header */
         header {
-            background-color: white;
-            color: var(--text);
-            padding: 1rem 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: var(--background);
             border-bottom: 1px solid var(--border);
+            padding: 12px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         
         .container {
@@ -51,31 +49,34 @@
         
         .header-content {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 30px;
         }
         
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 500;
             color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .tagline {
-            font-size: 0.9rem;
-            color: var(--secondary);
+        .logo-icon {
+            font-size: 24px;
         }
         
-        /* Navigation стилови */
+        /* Navigation */
         nav {
-            background-color: white;
+            background: var(--background);
             border-bottom: 1px solid var(--border);
         }
         
         .categories {
             display: flex;
             overflow-x: auto;
-            padding: 0.5rem 0;
+            padding: 0;
+            gap: 0;
             scrollbar-width: none;
         }
         
@@ -86,82 +87,73 @@
         .category-btn {
             background: none;
             border: none;
-            padding: 0.5rem 1rem;
-            margin-right: 0.3rem;
-            border-radius: 4px;
+            padding: 12px 16px;
             cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
+            font-size: 14px;
             color: var(--secondary);
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
         }
         
         .category-btn:hover {
-            background-color: var(--light);
+            background: var(--hover);
+            color: var(--text);
         }
         
         .category-btn.active {
-            background-color: var(--accent);
-            color: white;
+            color: var(--primary);
+            border-bottom-color: var(--primary);
         }
         
         /* Главна содржина */
         main {
-            padding: 1.5rem 0;
-            flex-grow: 1;
-        }
-        
-        .category-section {
-            display: none;
-            margin-bottom: 1.5rem;
-        }
-        
-        .category-section.active {
-            display: block;
-        }
-        
-        .category-title {
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border);
-            color: var(--primary);
-            font-size: 1.3rem;
+            padding: 20px 0;
         }
         
         .news-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 16px;
         }
         
         .news-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
             border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            position: relative;
         }
         
         .news-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
         }
         
         .news-content {
-            padding: 1.2rem;
-            flex-grow: 1;
+            padding: 16px;
             display: flex;
             flex-direction: column;
+            gap: 12px;
+        }
+        
+        .news-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .news-text {
+            flex: 1;
+            min-width: 0;
         }
         
         .news-title {
-            font-size: 1.05rem;
-            margin-bottom: 0.7rem;
+            font-size: 16px;
+            font-weight: 500;
             line-height: 1.4;
+            margin-bottom: 8px;
         }
         
         .news-title a {
@@ -170,46 +162,83 @@
         }
         
         .news-title a:hover {
-            color: var(--accent);
             text-decoration: underline;
         }
         
-        .news-description {
-            color: var(--secondary);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            flex-grow: 1;
-            line-height: 1.5;
+        .news-image {
+            width: 80px;
+            height: 60px;
+            border-radius: 4px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #f1f3f4;
+        }
+        
+        .news-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .news-meta {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 0.8rem;
+            gap: 8px;
+            font-size: 12px;
             color: var(--secondary);
-            margin-top: auto;
+        }
+        
+        .portal-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            object-fit: cover;
         }
         
         .portal-name {
             font-weight: 500;
-            background: var(--light);
-            padding: 0.2rem 0.6rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
         }
         
         .time-ago {
-            color: #7f8c8d;
-            font-size: 0.75rem;
+            margin-left: auto;
         }
         
-        /* Footer стилови */
+        .news-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        .share-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--secondary);
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .share-btn:hover {
+            background: var(--hover);
+            color: var(--primary);
+        }
+        
+        .share-icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* Footer */
         footer {
-            background-color: var(--dark);
-            color: white;
-            padding: 1.5rem 0;
-            margin-top: 2rem;
+            background: var(--background);
+            border-top: 1px solid var(--border);
+            padding: 20px 0;
+            margin-top: 40px;
         }
         
         .footer-content {
@@ -217,59 +246,54 @@
         }
         
         .footer-links {
-            margin: 1rem 0;
+            margin: 15px 0;
         }
         
         .footer-links a {
-            color: #bdc3c7;
-            margin: 0 0.5rem;
+            color: var(--secondary);
+            margin: 0 10px;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 14px;
         }
         
         .footer-links a:hover {
-            color: white;
+            color: var(--primary);
             text-decoration: underline;
         }
         
         .disclaimer {
-            font-size: 0.8rem;
-            color: #bdc3c7;
-            margin-top: 1rem;
-            max-width: 800px;
+            font-size: 12px;
+            color: var(--secondary);
+            margin-top: 10px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
             line-height: 1.4;
         }
         
-        .auto-refresh-info {
-            font-size: 0.8rem;
-            color: #bdc3c7;
-            margin-top: 0.5rem;
-        }
-        
         .copyright {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #34495e;
-            font-size: 0.8rem;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--secondary);
         }
         
-        /* Loading индикатор */
+        /* Loading */
         .loading {
             text-align: center;
-            padding: 2rem;
+            padding: 40px;
             color: var(--secondary);
         }
         
         .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--accent);
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary);
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 24px;
+            height: 24px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            margin: 0 auto 15px;
         }
         
         @keyframes spin {
@@ -277,51 +301,20 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Responsive дизајн */
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .logo {
-                margin-bottom: 0.5rem;
-            }
-            
-            .news-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .categories {
-                padding: 0.4rem 0;
-            }
-            
-            .category-btn {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.85rem;
-            }
-        }
-        
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .news-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
         /* Нотификации */
         .notification {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 0.8rem 1.2rem;
-            border-radius: 4px;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
             color: white;
             z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             transform: translateX(150%);
             transition: transform 0.3s ease;
             max-width: 300px;
-            font-size: 0.9rem;
+            font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
         .notification.show {
@@ -329,52 +322,163 @@
         }
         
         .notification.success {
-            background-color: #27ae60;
+            background-color: #0f9d58;
         }
         
         .notification.error {
-            background-color: #e74c3c;
+            background-color: #db4437;
         }
         
         .notification.info {
-            background-color: #3498db;
+            background-color: var(--primary);
         }
         
-        /* Додатни стилови */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+                padding: 0 10px;
+            }
+            
+            .header-content {
+                gap: 15px;
+            }
+            
+            .logo {
+                font-size: 18px;
+            }
+            
+            .news-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .categories {
+                padding: 0;
+            }
+            
+            .category-btn {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+            
+            .news-image {
+                width: 70px;
+                height: 50px;
+            }
+        }
+        
+        /* Дополнителни стилови */
+        .news-stats {
+            font-size: 14px;
             color: var(--secondary);
-        }
-        
-        .portal-count {
-            display: inline-block;
-            background: var(--accent);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
+            margin-bottom: 20px;
             text-align: center;
-            font-size: 0.7rem;
-            margin-left: 5px;
         }
         
         .error-message {
-            background: #ffeaa7;
-            border: 1px solid #fdcb6e;
-            border-radius: 4px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #e17055;
-            font-size: 0.9rem;
+            background: #fce8e6;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #c5221f;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #f5c0b8;
         }
         
-        .news-stats {
-            font-size: 0.8rem;
-            color: var(--secondary);
-            margin-bottom: 1rem;
-            text-align: center;
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        /* Share modal */
+        .share-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .share-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .share-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .share-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+        
+        .share-url {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .share-copy {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .share-copy:hover {
+            background: #0d66d0;
+        }
+        
+        .share-close {
+            background: #f8f9fa;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .share-close:hover {
+            background: #e8eaed;
         }
     </style>
 </head>
@@ -382,15 +486,17 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo">Вести Агрегатор</div>
-                <div class="tagline">Сите важни вести на едно место</div>
+                <div class="logo">
+                    <span class="logo-icon">📰</span>
+                    Вести Агрегатор
+                </div>
             </div>
         </div>
     </header>
     
     <nav>
         <div class="container">
-            <div class="categories" id="categories-container">
+            <div class="categories">
                 <button class="category-btn active" data-category="macedonia">Македонија</button>
                 <button class="category-btn" data-category="world">Свет</button>
             </div>
@@ -410,27 +516,34 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-links">
-                    <a href="#" id="about-link">За нас</a>
                     <a href="#" id="refresh-now-link">Ажурирај сега</a>
                 </div>
                 <div class="disclaimer">
-                    <p><strong>Оваа страна е open source и непрофитна.</strong> Сите вести се преземаат од јавно достапни извори и се прикажуваат единствено за информативни цели.</p>
-                </div>
-                <div class="auto-refresh-info">
-                    <p>Страната автоматски се ажурира на секои 15 минути за најнови вести</p>
+                    <p>Сите вести се преземаат од јавно достапни RSS извори. Страната автоматски се ажурира на секои 15 минути.</p>
                 </div>
                 <div class="copyright">
-                    <p>&copy; 2023 Вести Агрегатор - Македонија. Сите права се задржани.</p>
+                    <p>&copy; 2023 Вести Агрегатор</p>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Нотификации -->
+    <!-- Share Modal -->
+    <div id="share-modal" class="share-modal">
+        <div class="share-content">
+            <div class="share-title">Сподели вест</div>
+            <div id="share-url" class="share-url"></div>
+            <div class="share-buttons">
+                <button id="share-close" class="share-close">Затвори</button>
+                <button id="share-copy" class="share-copy">Копирај линк</button>
+            </div>
+        </div>
+    </div>
+
     <div id="notification" class="notification"></div>
 
     <script>
-        // RSS линкови за Македонија и Свет
+        // RSS линкови
         const rssFeeds = {
             macedonia: [
                 'https://plusinfo.mk/category/makedoni-a/feed/',
@@ -445,7 +558,6 @@
             ]
         };
 
-        // Мапа за имиња на портали
         const portalNames = {
             'plusinfo.mk': '+инфо',
             'zurnal.mk': 'Журнал',
@@ -453,20 +565,20 @@
             'makfax.com.mk': 'Макфакс'
         };
 
-        // Глобални променливи
-        let activeCategory = 'macedonia';
-        let allNews = {
-            macedonia: [],
-            world: []
+        const portalIcons = {
+            'plusinfo.mk': 'https://plusinfo.mk/favicon.ico',
+            'zurnal.mk': 'https://zurnal.mk/favicon.ico',
+            'sdk.mk': 'https://sdk.mk/favicon.ico',
+            'makfax.com.mk': 'https://makfax.com.mk/favicon.ico'
         };
-        let refreshInterval;
-        let cacheTimestamp = {
-            macedonia: 0,
-            world: 0
-        };
-        const CACHE_DURATION = 15 * 60 * 1000; // 15 минути кеш
 
-        // Функција за прикажување на нотификации
+        let activeCategory = 'macedonia';
+        let allNews = { macedonia: [], world: [] };
+        let refreshInterval;
+        let cacheTimestamp = { macedonia: 0, world: 0 };
+        const CACHE_DURATION = 15 * 60 * 1000;
+
+        // Нотификации
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -478,7 +590,7 @@
             }, 3000);
         }
 
-        // Функција за форматирање на времето
+        // Форматирање време
         function formatTimeAgo(pubDate) {
             const now = new Date();
             const publishTime = new Date(pubDate);
@@ -496,7 +608,7 @@
             }
         }
 
-        // Функција за добивање на име на портал од URL
+        // Име на портал
         function getPortalName(url) {
             try {
                 const domain = new URL(url).hostname;
@@ -506,31 +618,57 @@
             }
         }
 
-        // Брз CORS proxy
+        // Иконка на портал
+        function getPortalIcon(url) {
+            try {
+                const domain = new URL(url).hostname;
+                return portalIcons[domain] || `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+            } catch (e) {
+                return 'https://www.google.com/s2/favicons?domain=example.com&sz=32';
+            }
+        }
+
+        // Екстракт слика од RSS
+        function extractImageFromRSS(item) {
+            // Пробај да ја најдеш сликата од различни полиња
+            const enclosure = item.getElementsByTagName('enclosure')[0];
+            if (enclosure && enclosure.getAttribute('type')?.startsWith('image/')) {
+                return enclosure.getAttribute('url');
+            }
+
+            const mediaContent = item.getElementsByTagName('media:content')[0];
+            if (mediaContent && mediaContent.getAttribute('medium') === 'image') {
+                return mediaContent.getAttribute('url');
+            }
+
+            const description = item.getElementsByTagName('description')[0]?.textContent || '';
+            const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
+            if (imgMatch) {
+                return imgMatch[1];
+            }
+
+            return null;
+        }
+
+        // Брз proxy
         function getFastProxyUrl(url) {
-            // Користиме различни proxy сервиси за подобри перформанси
             const proxies = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                `https://cors-anywhere.herokuapp.com/${url}`
+                `https://corsproxy.io/?${encodeURIComponent(url)}`
             ];
             return proxies[Math.floor(Math.random() * proxies.length)];
         }
 
-        // Функција за брзо парсирање на RSS feed со timeout
+        // Парсирање RSS
         async function parseRSSFeed(feedUrl) {
             return new Promise(async (resolve) => {
-                const timeout = setTimeout(() => {
-                    resolve([]);
-                }, 5000); // 5 секунди timeout
+                const timeout = setTimeout(() => resolve([]), 5000);
 
                 try {
                     const proxyUrl = getFastProxyUrl(feedUrl);
                     const response = await fetch(proxyUrl);
                     
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     
                     const text = await response.text();
                     const parser = new DOMParser();
@@ -539,17 +677,17 @@
                     const items = xmlDoc.getElementsByTagName("item");
                     const newsItems = [];
                     
-                    // Земи само првите 5 вести за побрзо вчитување
-                    for (let i = 0; i < Math.min(items.length, 5); i++) {
+                    for (let i = 0; i < Math.min(items.length, 10); i++) {
                         const item = items[i];
                         const title = item.getElementsByTagName("title")[0]?.textContent || "Без наслов";
                         const link = item.getElementsByTagName("link")[0]?.textContent || feedUrl;
                         const description = item.getElementsByTagName("description")[0]?.textContent || "";
                         const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || new Date().toISOString();
                         
+                        const imageUrl = extractImageFromRSS(item);
                         const cleanDescription = description
                             .replace(/<[^>]*>/g, '')
-                            .substring(0, 120) + '...';
+                            .substring(0, 120);
                         
                         newsItems.push({
                             title: title.trim(),
@@ -557,6 +695,8 @@
                             description: cleanDescription,
                             pubDate: pubDate,
                             portal: getPortalName(feedUrl),
+                            portalIcon: getPortalIcon(feedUrl),
+                            imageUrl: imageUrl,
                             timestamp: Date.now()
                         });
                     }
@@ -571,17 +711,15 @@
             });
         }
 
-        // Функција за вчитување на вести со приоритет
+        // Вчитување вести
         async function loadCategoryNews(category) {
             const feedUrls = rssFeeds[category];
             const now = Date.now();
             
-            // Провери дали имаме свеж кеш
             if (now - cacheTimestamp[category] < CACHE_DURATION && allNews[category].length > 0) {
                 return allNews[category];
             }
             
-            // Вчитувај ги сите feeds паралелно
             const promises = feedUrls.map(url => parseRSSFeed(url));
             
             try {
@@ -590,7 +728,6 @@
                     .filter(result => result.status === 'fulfilled')
                     .flatMap(result => result.value);
                 
-                // Сортирање по датум (најнови први)
                 newsItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
                 
                 allNews[category] = newsItems;
@@ -602,15 +739,43 @@
             }
         }
 
-        // Функција за прикажување на вести со прогресивно вчитување
+        // Share функционалност
+        function setupShareModal() {
+            const shareModal = document.getElementById('share-modal');
+            const shareClose = document.getElementById('share-close');
+            const shareCopy = document.getElementById('share-copy');
+            const shareUrl = document.getElementById('share-url');
+            
+            shareClose.addEventListener('click', () => {
+                shareModal.classList.remove('show');
+            });
+            
+            shareCopy.addEventListener('click', () => {
+                const url = shareUrl.textContent;
+                navigator.clipboard.writeText(url).then(() => {
+                    showNotification('Линкот е копиран!', 'success');
+                    shareModal.classList.remove('show');
+                }).catch(() => {
+                    showNotification('Грешка при копирање', 'error');
+                });
+            });
+            
+            // Затвори при клик надвор од модалот
+            shareModal.addEventListener('click', (e) => {
+                if (e.target === shareModal) {
+                    shareModal.classList.remove('show');
+                }
+            });
+        }
+
+        // Прикажување вести
         function renderNews(category, news) {
             const newsContainer = document.getElementById('news-container');
             
             if (!news || news.length === 0) {
                 newsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Нема вести во моментов</h3>
-                        <p>Вестите се вчитуваат или има проблем со сервисите.</p>
+                    <div class="error-message">
+                        <p>Нема вести во моментов. Обидете се повторно.</p>
                     </div>
                 `;
                 return;
@@ -619,41 +784,70 @@
             const timeAgo = formatTimeAgo(news[0]?.timestamp || new Date());
             
             let newsHTML = `
-                <div class="category-section active">
-                    <div class="news-stats">
-                        Ажурирано пред ${timeAgo} • ${news.length} вести
-                    </div>
-                    <h2 class="category-title">${category === 'macedonia' ? 'Македонија' : 'Свет'}</h2>
-                    <div class="news-grid">
+                <div class="news-stats">
+                    Ажурирано пред ${timeAgo} • ${news.length} вести
+                </div>
+                <div class="news-grid">
             `;
             
             news.forEach(item => {
                 const itemTimeAgo = formatTimeAgo(item.pubDate);
+                const imageHTML = item.imageUrl ? 
+                    `<img src="${item.imageUrl}" alt="${item.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'image-placeholder\\'>${item.portal}</div>';" />` :
+                    `<div class="image-placeholder">${item.portal}</div>`;
+                
                 newsHTML += `
                     <div class="news-card">
                         <div class="news-content">
-                            <h3 class="news-title">
-                                <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
-                            </h3>
-                            <p class="news-description">${item.description}</p>
-                            <div class="news-meta">
-                                <span class="portal-name">${item.portal}</span>
-                                <span class="time-ago">${itemTimeAgo}</span>
+                            <div class="news-header">
+                                <div class="news-text">
+                                    <h3 class="news-title">
+                                        <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
+                                    </h3>
+                                </div>
+                                <div class="news-image">
+                                    ${imageHTML}
+                                </div>
+                            </div>
+                            <div class="news-actions">
+                                <div class="news-meta">
+                                    <img src="${item.portalIcon}" class="portal-icon" alt="${item.portal}" onerror="this.src='https://www.google.com/s2/favicons?domain=${item.portal}.mk&sz=32'" />
+                                    <span class="portal-name">${item.portal}</span>
+                                    <span class="time-ago">${itemTimeAgo}</span>
+                                </div>
+                                <button class="share-btn" data-url="${item.link}" data-title="${item.title}">
+                                    <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
             });
             
-            newsHTML += `</div></div>`;
+            newsHTML += `</div>`;
             newsContainer.innerHTML = newsHTML;
+            
+            // Додавање event listeners за share копчиња
+            document.querySelectorAll('.share-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const url = btn.getAttribute('data-url');
+                    const title = btn.getAttribute('data-title');
+                    const shareModal = document.getElementById('share-modal');
+                    const shareUrl = document.getElementById('share-url');
+                    
+                    shareUrl.textContent = url;
+                    shareModal.classList.add('show');
+                });
+            });
         }
 
-        // Функција за преминување помеѓу категории
+        // Смена на категорија
         async function switchCategory(category) {
             activeCategory = category;
             
-            // Ажурирање на активната категорија во навигацијата
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.getAttribute('data-category') === category) {
@@ -661,7 +855,6 @@
                 }
             });
             
-            // Прикажи вести веднаш ако ги имаме во кеш
             if (allNews[category].length > 0) {
                 renderNews(category, allNews[category]);
             } else {
@@ -673,12 +866,11 @@
                 `;
             }
             
-            // Вчитувај најнови вести во позадина
             const news = await loadCategoryNews(category);
             renderNews(category, news);
         }
 
-        // Функција за ажурирање на сите вести
+        // Ажурирање вести
         async function refreshAllNews() {
             showNotification("Вестите се ажурираат...", 'info');
             
@@ -692,22 +884,23 @@
                 allNews.world = worldNews;
                 
                 renderNews(activeCategory, allNews[activeCategory]);
-                showNotification("Вестите се ажурирани успешно!", 'success');
+                showNotification("Вестите се ажурирани", 'success');
             } catch (error) {
                 console.error('Error refreshing news:', error);
-                showNotification("Грешка при ажурирање на вестите", 'error');
+                showNotification("Грешка при ажурирање", 'error');
             }
         }
 
-        // Функција за стартување на авто-освежување
+        // Авто-освежување
         function startAutoRefresh() {
-            // Поставување на интервал за авто-освежување на секои 15 минути
             refreshInterval = setInterval(refreshAllNews, 15 * 60 * 1000);
         }
 
-        // Иницијализација на страната
+        // Иницијализација
         document.addEventListener('DOMContentLoaded', async function() {
-            // Додавање на event listeners за категориите
+            // Сетуп на share modal
+            setupShareModal();
+            
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const category = btn.getAttribute('data-category');
@@ -715,18 +908,11 @@
                 });
             });
             
-            // Додавање на event listeners за линковите во footer-от
-            document.getElementById('about-link').addEventListener('click', (e) => {
-                e.preventDefault();
-                alert("Вести Агрегатор - Македонија е непрофитен проект со цел да ги агрегира вестите од македонските портали на едно место. Оваа страна користи RSS feeds за да ги прикаже најновите вести.");
-            });
-            
             document.getElementById('refresh-now-link').addEventListener('click', (e) => {
                 e.preventDefault();
                 refreshAllNews();
             });
             
-            // Вчитување на почетни вести
             try {
                 await switchCategory('macedonia');
                 startAutoRefresh();
@@ -734,8 +920,7 @@
                 console.error('Error initializing app:', error);
                 document.getElementById('news-container').innerHTML = `
                     <div class="error-message">
-                        <strong>Грешка при вчитување на вестите</strong>
-                        <p>Обидете се повторно или проверете ја интернет врската.</p>
+                        <p>Грешка при вчитување. Обидете се повторно.</p>
                     </div>
                 `;
             }
