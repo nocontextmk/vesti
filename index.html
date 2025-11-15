@@ -14,6 +14,19 @@
             --background: #ffffff;
             --card-bg: #ffffff;
             --hover: #f8f9fa;
+            --header-bg: #ffffff;
+        }
+
+        /* Dark mode variables */
+        [data-theme="dark"] {
+            --primary: #8ab4f8;
+            --text: #e8eaed;
+            --secondary: #9aa0a6;
+            --border: #5f6368;
+            --background: #202124;
+            --card-bg: #303134;
+            --hover: #3c4043;
+            --header-bg: #303134;
         }
         
         * {
@@ -24,28 +37,31 @@
         }
         
         body {
-            background-color: #f8f9fa;
+            background-color: var(--background);
             color: var(--text);
             line-height: 1.5;
             min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        /* Header - тесен и скриен при скрол */
-        header {
-            background: var(--background);
-            border-bottom: 1px solid var(--border);
-            padding: 8px 0;
-            position: sticky;
+        /* Header Container */
+        .header-container {
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            transform: translateY(0);
-            opacity: 1;
+            transition: transform 0.3s ease;
         }
         
-        header.hidden {
-            transform: translateY(-100%);
-            opacity: 0;
+        /* Header - тесен */
+        header {
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 6px 0;
+            height: 40px;
+            display: flex;
+            align-items: center;
         }
         
         .container {
@@ -58,11 +74,11 @@
         .header-content {
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: space-between;
         }
         
         .logo {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 500;
             color: var(--primary);
             display: flex;
@@ -71,22 +87,38 @@
         }
         
         .logo-icon {
-            font-size: 20px;
+            font-size: 18px;
         }
         
-        .tagline {
-            font-size: 12px;
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
             color: var(--secondary);
+            padding: 4px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        /* Navigation - фиксен */
+        .theme-toggle:hover {
+            background: var(--hover);
+        }
+        
+        .theme-icon {
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Navigation - Fixed и тесен */
         nav {
-            background: var(--background);
+            background: var(--header-bg);
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 99;
-            padding: 0;
+            height: 42px;
+            display: flex;
+            align-items: center;
         }
         
         .categories {
@@ -95,6 +127,8 @@
             padding: 0;
             gap: 0;
             scrollbar-width: none;
+            height: 100%;
+            align-items: center;
         }
         
         .categories::-webkit-scrollbar {
@@ -104,13 +138,16 @@
         .category-btn {
             background: none;
             border: none;
-            padding: 12px 16px;
+            padding: 8px 14px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--secondary);
             white-space: nowrap;
             border-bottom: 2px solid transparent;
             transition: all 0.2s ease;
+            height: 100%;
+            display: flex;
+            align-items: center;
         }
         
         .category-btn:hover {
@@ -123,9 +160,9 @@
             border-bottom-color: var(--primary);
         }
         
-        /* Главна содржина */
+        /* Главна содржина - padding за фиксени хедери */
         main {
-            padding: 20px 0;
+            padding: 82px 0 20px 0; /* 40px header + 42px nav */
         }
         
         .news-grid {
@@ -188,7 +225,7 @@
             border-radius: 4px;
             overflow: hidden;
             flex-shrink: 0;
-            background: #f1f3f4;
+            background: var(--hover);
         }
         
         .news-image img {
@@ -252,7 +289,7 @@
         
         /* Footer */
         footer {
-            background: var(--background);
+            background: var(--header-bg);
             border-top: 1px solid var(--border);
             padding: 20px 0;
             margin-top: 40px;
@@ -304,7 +341,7 @@
         }
         
         .loading-spinner {
-            border: 2px solid #f3f3f3;
+            border: 2px solid var(--hover);
             border-top: 2px solid var(--primary);
             border-radius: 50%;
             width: 24px;
@@ -358,15 +395,11 @@
             }
             
             .header-content {
-                gap: 10px;
+                gap: 15px;
             }
             
             .logo {
-                font-size: 16px;
-            }
-            
-            .tagline {
-                font-size: 11px;
+                font-size: 14px;
             }
             
             .news-grid {
@@ -379,13 +412,26 @@
             }
             
             .category-btn {
-                padding: 10px 12px;
-                font-size: 13px;
+                padding: 6px 10px;
+                font-size: 12px;
             }
             
             .news-image {
                 width: 70px;
                 height: 50px;
+            }
+            
+            main {
+                padding: 72px 0 20px 0; /* Помали хедери на мобилен */
+            }
+            
+            header {
+                height: 36px;
+                padding: 4px 0;
+            }
+            
+            nav {
+                height: 36px;
             }
         }
         
@@ -406,6 +452,12 @@
             font-size: 14px;
             text-align: center;
             border: 1px solid #f5c0b8;
+        }
+        
+        [data-theme="dark"] .error-message {
+            background: #3c1a17;
+            color: #f28b82;
+            border-color: #5c302b;
         }
         
         .image-placeholder {
@@ -443,7 +495,7 @@
         }
         
         .share-content {
-            background: white;
+            background: var(--card-bg);
             padding: 20px;
             border-radius: 8px;
             width: 90%;
@@ -459,13 +511,14 @@
         }
         
         .share-url {
-            background: #f8f9fa;
+            background: var(--hover);
             border: 1px solid var(--border);
             border-radius: 4px;
             padding: 10px;
             font-size: 14px;
             margin-bottom: 15px;
             word-break: break-all;
+            color: var(--text);
         }
         
         .share-buttons {
@@ -488,8 +541,12 @@
             background: #0d66d0;
         }
         
+        [data-theme="dark"] .share-copy:hover {
+            background: #aecbfa;
+        }
+        
         .share-close {
-            background: #f8f9fa;
+            background: var(--hover);
             color: var(--text);
             border: 1px solid var(--border);
             padding: 8px 16px;
@@ -499,31 +556,37 @@
         }
         
         .share-close:hover {
-            background: #e8eaed;
+            background: var(--border);
         }
     </style>
 </head>
 <body>
-    <header id="main-header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <span class="logo-icon">📰</span>
-                    Вести Агрегатор
+    <div class="header-container" id="header-container">
+        <header id="main-header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <span class="logo-icon">📰</span>
+                        Вести Агрегатор
+                    </div>
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Промени тема">
+                        <svg class="theme-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12,7C14.8,7 17,9.2 17,12C17,14.8 14.8,17 12,17C9.2,17 7,14.8 7,12C7,9.2 9.2,7 12,7M12,9C10.3,9 9,10.3 9,12C9,13.7 10.3,15 12,15C13.7,15 15,13.7 15,12C15,10.3 13.7,9 12,9M12,2L14.4,6.9L20,7.3L16.5,11.2L17.5,16.7L12,14.2L6.5,16.7L7.5,11.2L4,7.3L9.6,6.9L12,2Z"/>
+                        </svg>
+                    </button>
                 </div>
-                <div class="tagline">Најнови вести од македонски портали</div>
             </div>
-        </div>
-    </header>
-    
-    <nav>
-        <div class="container">
-            <div class="categories">
-                <button class="category-btn active" data-category="macedonia">Македонија</button>
-                <button class="category-btn" data-category="world">Свет</button>
+        </header>
+        
+        <nav id="categories-nav">
+            <div class="container">
+                <div class="categories">
+                    <button class="category-btn active" data-category="macedonia">Македонија</button>
+                    <button class="category-btn" data-category="world">Свет</button>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
+    </div>
     
     <main class="container">
         <div id="news-container">
@@ -599,7 +662,10 @@
         let refreshInterval;
         let cacheTimestamp = { macedonia: 0, world: 0 };
         const CACHE_DURATION = 15 * 60 * 1000;
-        let lastScrollTop = 0;
+
+        // Scroll handling variables
+        let lastScrollY = window.scrollY;
+        let ticking = false;
 
         // Нотификации
         function showNotification(message, type = 'success') {
@@ -613,23 +679,79 @@
             }, 3000);
         }
 
-        // Скрајл функција за хедерот
-        function handleScroll() {
-            const header = document.getElementById('main-header');
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        // Dark mode functionality
+        function initDarkMode() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+            const currentTheme = localStorage.getItem('theme');
             
-            if (scrollTop === 0) {
-                // Најгоре - прикажи хедер
-                header.classList.remove('hidden');
-            } else if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // Скрол надолу - скриј хедер
-                header.classList.add('hidden');
-            } else if (scrollTop < lastScrollTop) {
-                // Скрол нагоре - прикажи хедер
-                header.classList.remove('hidden');
+            // Set initial theme
+            if (currentTheme === 'dark' || (!currentTheme && prefersDarkScheme.matches)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                updateThemeIcon(true);
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                updateThemeIcon(false);
             }
             
-            lastScrollTop = scrollTop;
+            // Toggle theme on button click
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    updateThemeIcon(false);
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    updateThemeIcon(true);
+                }
+            });
+        }
+
+        // Update theme icon based on current theme
+        function updateThemeIcon(isDark) {
+            const themeIcon = document.querySelector('.theme-icon');
+            if (isDark) {
+                themeIcon.innerHTML = '<path d="M12,7C14.8,7 17,9.2 17,12C17,14.8 14.8,17 12,17C9.2,17 7,14.8 7,12C7,9.2 9.2,7 12,7M12,9C10.3,9 9,10.3 9,12C9,13.7 10.3,15 12,15C13.7,15 15,13.7 15,12C15,10.3 13.7,9 12,9M12,2L14.4,6.9L20,7.3L16.5,11.2L17.5,16.7L12,14.2L6.5,16.7L7.5,11.2L4,7.3L9.6,6.9L12,2Z"/>';
+            } else {
+                themeIcon.innerHTML = '<path d="M12,18C8.7,18 6,15.3 6,12C6,8.7 8.7,6 12,6C15.3,6 18,8.7 18,12C18,15.3 15.3,18 12,18M12,8C9.8,8 8,9.8 8,12C8,14.2 9.8,16 12,16C14.2,16 16,14.2 16,12C16,9.8 14.2,8 12,8M12,4C7.6,4 4,7.6 4,12C4,16.4 7.6,20 12,20C16.4,20 20,16.4 20,12C20,7.6 16.4,4 12,4M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z"/>';
+            }
+        }
+
+        // Scroll handling for header
+        function initScrollHandling() {
+            const headerContainer = document.getElementById('header-container');
+            let isHeaderHidden = false;
+            
+            function updateHeaderVisibility() {
+                const scrollY = window.scrollY;
+                
+                // Hide header when scrolling down, show when at top or scrolling up
+                if (scrollY > 50 && scrollY > lastScrollY) {
+                    if (!isHeaderHidden) {
+                        headerContainer.style.transform = 'translateY(-40px)'; // Само горниот хедер се крие
+                        isHeaderHidden = true;
+                    }
+                } else if (scrollY < 30 || scrollY < lastScrollY) {
+                    if (isHeaderHidden) {
+                        headerContainer.style.transform = 'translateY(0)';
+                        isHeaderHidden = false;
+                    }
+                }
+                
+                lastScrollY = scrollY;
+                ticking = false;
+            }
+            
+            function onScroll() {
+                if (!ticking) {
+                    requestAnimationFrame(updateHeaderVisibility);
+                    ticking = true;
+                }
+            }
+            
+            window.addEventListener('scroll', onScroll);
         }
 
         // Форматирање време
@@ -940,11 +1062,14 @@
 
         // Иницијализација
         document.addEventListener('DOMContentLoaded', async function() {
+            // Иницијализирај dark mode
+            initDarkMode();
+            
+            // Иницијализирај scroll handling
+            initScrollHandling();
+            
             // Сетуп на share modal
             setupShareModal();
-            
-            // Додавање scroll event listener
-            window.addEventListener('scroll', handleScroll);
             
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
