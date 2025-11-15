@@ -30,14 +30,22 @@
             min-height: 100vh;
         }
         
-        /* Header */
+        /* Header - тесен и скриен при скрол */
         header {
             background: var(--background);
             border-bottom: 1px solid var(--border);
-            padding: 12px 0;
+            padding: 8px 0;
             position: sticky;
             top: 0;
             z-index: 100;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        header.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
         }
         
         .container {
@@ -50,26 +58,35 @@
         .header-content {
             display: flex;
             align-items: center;
-            gap: 30px;
+            gap: 15px;
         }
         
         .logo {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 500;
             color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         
         .logo-icon {
-            font-size: 24px;
+            font-size: 20px;
         }
         
-        /* Navigation */
+        .tagline {
+            font-size: 12px;
+            color: var(--secondary);
+        }
+        
+        /* Navigation - фиксен */
         nav {
             background: var(--background);
             border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            padding: 0;
         }
         
         .categories {
@@ -341,11 +358,15 @@
             }
             
             .header-content {
-                gap: 15px;
+                gap: 10px;
             }
             
             .logo {
-                font-size: 18px;
+                font-size: 16px;
+            }
+            
+            .tagline {
+                font-size: 11px;
             }
             
             .news-grid {
@@ -483,13 +504,14 @@
     </style>
 </head>
 <body>
-    <header>
+    <header id="main-header">
         <div class="container">
             <div class="header-content">
                 <div class="logo">
                     <span class="logo-icon">📰</span>
                     Вести Агрегатор
                 </div>
+                <div class="tagline">Најнови вести од македонски портали</div>
             </div>
         </div>
     </header>
@@ -577,6 +599,7 @@
         let refreshInterval;
         let cacheTimestamp = { macedonia: 0, world: 0 };
         const CACHE_DURATION = 15 * 60 * 1000;
+        let lastScrollTop = 0;
 
         // Нотификации
         function showNotification(message, type = 'success') {
@@ -588,6 +611,25 @@
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
+        }
+
+        // Скрајл функција за хедерот
+        function handleScroll() {
+            const header = document.getElementById('main-header');
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop === 0) {
+                // Најгоре - прикажи хедер
+                header.classList.remove('hidden');
+            } else if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Скрол надолу - скриј хедер
+                header.classList.add('hidden');
+            } else if (scrollTop < lastScrollTop) {
+                // Скрол нагоре - прикажи хедер
+                header.classList.remove('hidden');
+            }
+            
+            lastScrollTop = scrollTop;
         }
 
         // Форматирање време
@@ -900,6 +942,9 @@
         document.addEventListener('DOMContentLoaded', async function() {
             // Сетуп на share modal
             setupShareModal();
+            
+            // Додавање scroll event listener
+            window.addEventListener('scroll', handleScroll);
             
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
