@@ -369,6 +369,13 @@
             color: #e17055;
             font-size: 0.9rem;
         }
+        
+        .news-stats {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -453,6 +460,11 @@
             world: []
         };
         let refreshInterval;
+        let cacheTimestamp = {
+            macedonia: 0,
+            world: 0
+        };
+        const CACHE_DURATION = 15 * 60 * 1000; // 15 минути кеш
 
         // Функција за прикажување на нотификации
         function showNotification(message, type = 'success') {
@@ -494,63 +506,86 @@
             }
         }
 
-        // Функција за парсирање на RSS feed
-        async function parseRSSFeed(feedUrl) {
-            try {
-                // Користиме CORS proxy за да избегнеме CORS грешки
-                const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                const response = await fetch(proxyUrl + encodeURIComponent(feedUrl));
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const text = await response.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(text, "text/xml");
-                
-                // Проверка дали RSS feed-от е валиден
-                const parseError = xmlDoc.getElementsByTagName("parsererror")[0];
-                if (parseError) {
-                    throw new Error("Invalid RSS feed");
-                }
-                
-                const items = xmlDoc.getElementsByTagName("item");
-                const newsItems = [];
-                
-                for (let i = 0; i < Math.min(items.length, 10); i++) {
-                    const item = items[i];
-                    const title = item.getElementsByTagName("title")[0]?.textContent || "Без наслов";
-                    const link = item.getElementsByTagName("link")[0]?.textContent || feedUrl;
-                    const description = item.getElementsByTagName("description")[0]?.textContent || "";
-                    const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || new Date().toISOString();
-                    
-                    // Чистење на HTML од описот
-                    const cleanDescription = description.replace(/<[^>]*>/g, '').substring(0, 150) + '...';
-                    
-                    newsItems.push({
-                        title: title.trim(),
-                        link: link.trim(),
-                        description: cleanDescription,
-                        pubDate: pubDate,
-                        portal: getPortalName(feedUrl)
-                    });
-                }
-                
-                return newsItems;
-            } catch (error) {
-                console.error(`Error parsing RSS feed ${feedUrl}:`, error);
-                return [];
-            }
+        // Брз CORS proxy
+        function getFastProxyUrl(url) {
+            // Користиме различни proxy сервиси за подобри перформанси
+            const proxies = [
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                `https://cors-anywhere.herokuapp.com/${url}`
+            ];
+            return proxies[Math.floor(Math.random() * proxies.length)];
         }
 
-        // Функција за вчитување на сите вести за категорија
+        // Функција за брзо парсирање на RSS feed со timeout
+        async function parseRSSFeed(feedUrl) {
+            return new Promise(async (resolve) => {
+                const timeout = setTimeout(() => {
+                    resolve([]);
+                }, 5000); // 5 секунди timeout
+
+                try {
+                    const proxyUrl = getFastProxyUrl(feedUrl);
+                    const response = await fetch(proxyUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const text = await response.text();
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(text, "text/xml");
+                    
+                    const items = xmlDoc.getElementsByTagName("item");
+                    const newsItems = [];
+                    
+                    // Земи само првите 5 вести за побрзо вчитување
+                    for (let i = 0; i < Math.min(items.length, 5); i++) {
+                        const item = items[i];
+                        const title = item.getElementsByTagName("title")[0]?.textContent || "Без наслов";
+                        const link = item.getElementsByTagName("link")[0]?.textContent || feedUrl;
+                        const description = item.getElementsByTagName("description")[0]?.textContent || "";
+                        const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || new Date().toISOString();
+                        
+                        const cleanDescription = description
+                            .replace(/<[^>]*>/g, '')
+                            .substring(0, 120) + '...';
+                        
+                        newsItems.push({
+                            title: title.trim(),
+                            link: link.trim(),
+                            description: cleanDescription,
+                            pubDate: pubDate,
+                            portal: getPortalName(feedUrl),
+                            timestamp: Date.now()
+                        });
+                    }
+                    
+                    clearTimeout(timeout);
+                    resolve(newsItems);
+                } catch (error) {
+                    console.error(`Error parsing RSS feed ${feedUrl}:`, error);
+                    clearTimeout(timeout);
+                    resolve([]);
+                }
+            });
+        }
+
+        // Функција за вчитување на вести со приоритет
         async function loadCategoryNews(category) {
             const feedUrls = rssFeeds[category];
-            const allPromises = feedUrls.map(url => parseRSSFeed(url));
+            const now = Date.now();
+            
+            // Провери дали имаме свеж кеш
+            if (now - cacheTimestamp[category] < CACHE_DURATION && allNews[category].length > 0) {
+                return allNews[category];
+            }
+            
+            // Вчитувај ги сите feeds паралелно
+            const promises = feedUrls.map(url => parseRSSFeed(url));
             
             try {
-                const results = await Promise.allSettled(allPromises);
+                const results = await Promise.allSettled(promises);
                 const newsItems = results
                     .filter(result => result.status === 'fulfilled')
                     .flatMap(result => result.value);
@@ -559,19 +594,19 @@
                 newsItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
                 
                 allNews[category] = newsItems;
+                cacheTimestamp[category] = now;
                 return newsItems;
             } catch (error) {
                 console.error(`Error loading news for ${category}:`, error);
-                return [];
+                return allNews[category] || [];
             }
         }
 
-        // Функција за прикажување на вести
-        function renderNews(category) {
+        // Функција за прикажување на вести со прогресивно вчитување
+        function renderNews(category, news) {
             const newsContainer = document.getElementById('news-container');
-            const news = allNews[category];
             
-            if (news.length === 0) {
+            if (!news || news.length === 0) {
                 newsContainer.innerHTML = `
                     <div class="empty-state">
                         <h3>Нема вести во моментов</h3>
@@ -581,12 +616,19 @@
                 return;
             }
             
-            let newsHTML = `<div class="category-section active">
-                <h2 class="category-title">${category === 'macedonia' ? 'Македонија' : 'Свет'}</h2>
-                <div class="news-grid">`;
+            const timeAgo = formatTimeAgo(news[0]?.timestamp || new Date());
+            
+            let newsHTML = `
+                <div class="category-section active">
+                    <div class="news-stats">
+                        Ажурирано пред ${timeAgo} • ${news.length} вести
+                    </div>
+                    <h2 class="category-title">${category === 'macedonia' ? 'Македонија' : 'Свет'}</h2>
+                    <div class="news-grid">
+            `;
             
             news.forEach(item => {
-                const timeAgo = formatTimeAgo(item.pubDate);
+                const itemTimeAgo = formatTimeAgo(item.pubDate);
                 newsHTML += `
                     <div class="news-card">
                         <div class="news-content">
@@ -596,7 +638,7 @@
                             <p class="news-description">${item.description}</p>
                             <div class="news-meta">
                                 <span class="portal-name">${item.portal}</span>
-                                <span class="time-ago">${timeAgo}</span>
+                                <span class="time-ago">${itemTimeAgo}</span>
                             </div>
                         </div>
                     </div>
@@ -608,7 +650,7 @@
         }
 
         // Функција за преминување помеѓу категории
-        function switchCategory(category) {
+        async function switchCategory(category) {
             activeCategory = category;
             
             // Ажурирање на активната категорија во навигацијата
@@ -619,9 +661,9 @@
                 }
             });
             
-            // Прикажување на вестите за избраната категорија
+            // Прикажи вести веднаш ако ги имаме во кеш
             if (allNews[category].length > 0) {
-                renderNews(category);
+                renderNews(category, allNews[category]);
             } else {
                 document.getElementById('news-container').innerHTML = `
                     <div class="loading">
@@ -629,8 +671,11 @@
                         <p>Вчитувам вести...</p>
                     </div>
                 `;
-                loadCategoryNews(category).then(() => renderNews(category));
             }
+            
+            // Вчитувај најнови вести во позадина
+            const news = await loadCategoryNews(category);
+            renderNews(category, news);
         }
 
         // Функција за ажурирање на сите вести
@@ -638,12 +683,15 @@
             showNotification("Вестите се ажурираат...", 'info');
             
             try {
-                await Promise.all([
+                const [macedoniaNews, worldNews] = await Promise.all([
                     loadCategoryNews('macedonia'),
                     loadCategoryNews('world')
                 ]);
                 
-                renderNews(activeCategory);
+                allNews.macedonia = macedoniaNews;
+                allNews.world = worldNews;
+                
+                renderNews(activeCategory, allNews[activeCategory]);
                 showNotification("Вестите се ажурирани успешно!", 'success');
             } catch (error) {
                 console.error('Error refreshing news:', error);
@@ -680,7 +728,7 @@
             
             // Вчитување на почетни вести
             try {
-                await refreshAllNews();
+                await switchCategory('macedonia');
                 startAutoRefresh();
             } catch (error) {
                 console.error('Error initializing app:', error);
