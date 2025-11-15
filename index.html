@@ -130,16 +130,16 @@
         
         .news-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
         
         .news-card {
             background: white;
-            border-radius: 4px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -147,20 +147,20 @@
         }
         
         .news-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .news-content {
-            padding: 1rem;
+            padding: 1.2rem;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
         
         .news-title {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+            margin-bottom: 0.7rem;
             line-height: 1.4;
         }
         
@@ -176,21 +176,27 @@
         
         .news-description {
             color: var(--secondary);
-            font-size: 0.85rem;
-            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
             flex-grow: 1;
+            line-height: 1.5;
         }
         
         .news-meta {
             display: flex;
             justify-content: space-between;
-            font-size: 0.75rem;
+            align-items: center;
+            font-size: 0.8rem;
             color: var(--secondary);
             margin-top: auto;
         }
         
         .portal-name {
             font-weight: 500;
+            background: var(--light);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
         }
         
         .time-ago {
@@ -252,8 +258,23 @@
         /* Loading индикатор */
         .loading {
             text-align: center;
-            padding: 1.5rem;
+            padding: 2rem;
             color: var(--secondary);
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         /* Responsive дизајн */
@@ -322,7 +343,7 @@
         /* Додатни стилови */
         .empty-state {
             text-align: center;
-            padding: 2rem 1rem;
+            padding: 3rem 1rem;
             color: var(--secondary);
         }
         
@@ -339,19 +360,14 @@
             margin-left: 5px;
         }
         
-        .reset-btn {
-            background: none;
-            border: 1px solid #bdc3c7;
-            color: #bdc3c7;
-            padding: 0.3rem 0.7rem;
+        .error-message {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            margin-left: 0.5rem;
-        }
-        
-        .reset-btn:hover {
-            background-color: rgba(255,255,255,0.1);
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #e17055;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -368,14 +384,18 @@
     <nav>
         <div class="container">
             <div class="categories" id="categories-container">
-                <!-- Категориите ќе се пополнат со JavaScript -->
+                <button class="category-btn active" data-category="macedonia">Македонија</button>
+                <button class="category-btn" data-category="world">Свет</button>
             </div>
         </div>
     </nav>
     
     <main class="container">
         <div id="news-container">
-            <!-- Вестите ќе се прикажат овде -->
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Вчитувам вести...</p>
+            </div>
         </div>
     </main>
     
@@ -384,12 +404,10 @@
             <div class="footer-content">
                 <div class="footer-links">
                     <a href="#" id="about-link">За нас</a>
-                    <a href="#" id="contact-link">Контакт</a>
-                    <a href="#" id="reset-link">Ресетирај портали</a>
                     <a href="#" id="refresh-now-link">Ажурирај сега</a>
                 </div>
                 <div class="disclaimer">
-                    <p><strong>Оваа страна е open source и непрофитна.</strong> Сите вести се преземаат од јавно достапни извори и се прикажуваат единствено за информативни цели. Секој портал може да се избрише од страната по барање.</p>
+                    <p><strong>Оваа страна е open source и непрофитна.</strong> Сите вести се преземаат од јавно достапни извори и се прикажуваат единствено за информативни цели.</p>
                 </div>
                 <div class="auto-refresh-info">
                     <p>Страната автоматски се ажурира на секои 15 минути за најнови вести</p>
@@ -405,140 +423,35 @@
     <div id="notification" class="notification"></div>
 
     <script>
-        // Дефинирање на категории и портали
-        const categories = {
-            "Македонија": [
-                "24 Вести", "ТВ21", "Макфакс", "+инфо", "Сакам да кажам", 
-                "360 степени", "Нова Македонија", "Независен", "Deutsche Welle", 
-                "Р.С.", "Европа", "Пари", "Bloomberg Adria", "Либертас", "Нова ТВ", 
-                "Бриф", "IRL", "Призма", "Мета", "Press24", "Прва Скопска", 
-                "Радио МОФ", "Пулс24", "CivilMedia", "Вечер Пресе", "Магазин", 
-                "Frontline24", "ИнфоВо Центар", "Скопско Ехо", "Скопје1", 
-                "Скопје инфо", "Рацин", "Бизнис Вести", "ПортаТера", "iNFOMAX", 
-                "Вечер", "Економија и Бизнис", "Антропол", "Политика", "Журнал", "Проверено"
+        // RSS линкови за Македонија и Свет
+        const rssFeeds = {
+            macedonia: [
+                'https://plusinfo.mk/category/makedoni-a/feed/',
+                'https://zurnal.mk/category/makedonija/feed/',
+                'https://sdk.mk/index.php/category/makedonija/feed/',
+                'https://makfax.com.mk/makedonija/feed/'
             ],
-            "Спорт": [
-                "Спортклуб", "IPON", "TopSport", "Спорт+", "SportStation"
-            ],
-            "Технологија": [
-                "IT.mk", "Smartportal", "WebMind", "Иновативност", "USB"
-            ],
-            "Автомобили": [
-                "Авто Магазин", "Авто Плус24", "auto", "Automedia", "CARClub", 
-                "Репортер", "Е-автомобили"
-            ],
-            "Здравје": [
-                "Д-р Митов", "Pedijatar.mk", "Panacea.mk", "Убавина и Здравје", 
-                "Lady", "Зелена берза"
-            ],
-            "Култура": [
-                "Култура24", "Религија", "Конект", "Булевар", "Читај", 
-                "Vostip", "Весник Илинден", "Охрид1", "Шеталиште", "Во Бело", 
-                "Glamur", "Кајгана", "Црнобело", "Окно", "Факултети", "Fashionel", 
-                "Таратур", "365Попара", "Градина"
-            ],
-            "Локални вести": [
-                "Битола Њуз", "Бабам Битола", "Апла", "Трн", "Градска", "Умно"
-            ],
-            "Време": [
-                "Метео Аларм"
-            ],
-            "Друго": [
-                "Банкарство.мк", "Деца", "Екран", "Емитер", "Агротим"
+            world: [
+                'https://sdk.mk/index.php/category/svet/feed/',
+                'https://makfax.com.mk/svet/feed/',
+                'https://zurnal.mk/category/svet/feed/'
             ]
         };
 
-        // Пример вести за секој портал со реални линкови и времиња
-        const portalNews = {
-            "24 Вести": [
-                { title: "Нова влада ја презеде функцијата по изборите", link: "https://24vesti.mk", time: 45 },
-                { title: "Економски раст од 3.2% во првиот квартал", link: "https://24vesti.mk", time: 120 },
-                { title: "Реформа во здравственото осигурање", link: "https://24vesti.mk", time: 30 },
-                { title: "Нови инвестиции во инфраструктура", link: "https://24vesti.mk", time: 90 },
-                { title: "Промени во даночниот систем", link: "https://24vesti.mk", time: 150 }
-            ],
-            "ТВ21": [
-                { title: "Интервју со претседателот", link: "https://tv21.tv", time: 25 },
-                { title: "Нови инвестиции во инфраструктура", link: "https://tv21.tv", time: 65 },
-                { title: "Културен фестивал во Скопје", link: "https://tv21.tv", time: 40 },
-                { title: "Образовни реформи", link: "https://tv21.tv", time: 85 },
-                { title: "Спортски настани", link: "https://tv21.tv", time: 15 }
-            ],
-            "Макфакс": [
-                { title: "Анализа на пазарот на труд", link: "https://makfax.com.mk", time: 55 },
-                { title: "Промени во даночниот систем", link: "https://makfax.com.mk", time: 125 },
-                { title: "Спортски успеси на домашни атлетичари", link: "https://makfax.com.mk", time: 35 },
-                { title: "Економски извештај", link: "https://makfax.com.mk", time: 95 },
-                { title: "Политички анализи", link: "https://makfax.com.mk", time: 75 }
-            ],
-            "Спортклуб": [
-                { title: "ФК Вардар со нова победа", link: "https://sportclub.mk", time: 20 },
-                { title: "Македонски кошаркар во странство", link: "https://sportclub.mk", time: 50 },
-                { title: "Подготовки за Олимпијадата", link: "https://sportclub.mk", time: 110 },
-                { title: "Тениски турнир во Скопје", link: "https://sportclub.mk", time: 80 },
-                { title: "Резултати од првенството", link: "https://sportclub.mk", time: 10 }
-            ],
-            "IT.mk": [
-                { title: "Нова технолошка компанија во Македонија", link: "https://it.mk", time: 45 },
-                { title: "Стартап финансиран од ЕУ", link: "https://it.mk", time: 100 },
-                { title: "Дигитална трансформација на малите бизниси", link: "https://it.mk", time: 30 },
-                { title: "Технолошки иновации", link: "https://it.mk", time: 70 },
-                { title: "Образование во ИТ секторот", link: "https://it.mk", time: 120 }
-            ],
-            "Метео Аларм": [
-                { title: "Нестабилно време наредните денови", link: "https://meteoalarm.mk", time: 5 },
-                { title: "Топлотен бран во јули", link: "https://meteoalarm.mk", time: 180 },
-                { title: "Пролетни температури во март", link: "https://meteoalarm.mk", time: 240 },
-                { title: "Временска прогноза за викенд", link: "https://meteoalarm.mk", time: 60 },
-                { title: "Мерки за време на екстремни временски услови", link: "https://meteoalarm.mk", time: 30 }
-            ],
-            "Deutsche Welle": [
-                { title: "ЕУ разговори за проширување", link: "https://www.dw.com/mk", time: 90 },
-                { title: "Глобални економски трендови", link: "https://www.dw.com/mk", time: 150 },
-                { title: "Културна размена со Германија", link: "https://www.dw.com/mk", time: 65 },
-                { title: "Политички анализи", link: "https://www.dw.com/mk", time: 110 },
-                { title: "Економски извештаи", link: "https://www.dw.com/mk", time: 85 }
-            ],
-            "Нова ТВ": [
-                { title: "Вести од Нова ТВ", link: "https://nova.mk", time: 25 },
-                { title: "Интервјуа и репортажи", link: "https://nova.mk", time: 45 },
-                { title: "Актуелни настани", link: "https://nova.mk", time: 15 },
-                { title: "Документарни емисии", link: "https://nova.mk", time: 90 },
-                { title: "Спортски програми", link: "https://nova.mk", time: 35 }
-            ],
-            "Сакам да кажам": [
-                { title: "Мислења и коментари", link: "https://sakamnakazham.mk", time: 50 },
-                { title: "Публицистика и анализи", link: "https://sakamnakazham.mk", time: 120 },
-                { title: "Општествени дискусии", link: "https://sakamnakazham.mk", time: 75 },
-                { title: "Културни теми", link: "https://sakamnakazham.mk", time: 95 },
-                { title: "Политички коментари", link: "https://sakamnakazham.mk", time: 40 }
-            ],
-            "Кајгана": [
-                { title: "Рецепти и кулинарски совети", link: "https://kajgana.com", time: 180 },
-                { title: "Здравје и исхрана", link: "https://kajgana.com", time: 240 },
-                { title: "Сезонски рецепти", link: "https://kajgana.com", time: 120 },
-                { title: "Вегетаријанска кујна", link: "https://kajgana.com", time: 90 },
-                { title: "Традиционални јадења", link: "https://kajgana.com", time: 300 }
-            ],
-            "Авто Магазин": [
-                { title: "Нови модели автомобили", link: "https://automagazin.com.mk", time: 60 },
-                { title: "Технички прегледи", link: "https://automagazin.com.mk", time: 150 },
-                { title: "Безбедност во сообраќајот", link: "https://automagazin.com.mk", time: 45 },
-                { title: "Електрични возила", link: "https://automagazin.com.mk", time: 85 },
-                { title: "Совети за одржување", link: "https://automagazin.com.mk", time: 110 }
-            ],
-            "Д-р Митов": [
-                { title: "Здравствени совети", link: "https://drmitov.com", time: 200 },
-                { title: "Превенција на болести", link: "https://drmitov.com", time: 140 },
-                { title: "Исхрана и вежбање", link: "https://drmitov.com", time: 90 },
-                { title: "Ментално здравје", link: "https://drmitov.com", time: 65 },
-                { title: "Современи третмани", link: "https://drmitov.com", time: 120 }
-            ]
+        // Мапа за имиња на портали
+        const portalNames = {
+            'plusinfo.mk': '+инфо',
+            'zurnal.mk': 'Журнал',
+            'sdk.mk': 'СДК',
+            'makfax.com.mk': 'Макфакс'
         };
 
         // Глобални променливи
-        let activeCategory = "Македонија";
-        let removedPortals = JSON.parse(localStorage.getItem('removedPortals')) || [];
+        let activeCategory = 'macedonia';
+        let allNews = {
+            macedonia: [],
+            world: []
+        };
         let refreshInterval;
 
         // Функција за прикажување на нотификации
@@ -554,33 +467,144 @@
         }
 
         // Функција за форматирање на времето
-        function formatTimeAgo(minutes) {
-            if (minutes < 60) {
-                return `${minutes} мин`;
+        function formatTimeAgo(pubDate) {
+            const now = new Date();
+            const publishTime = new Date(pubDate);
+            const diffMs = now - publishTime;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffMins < 60) {
+                return `${diffMins} мин`;
+            } else if (diffHours < 24) {
+                return `${diffHours}Ч`;
             } else {
-                const hours = Math.floor(minutes / 60);
-                return `${hours}Ч`;
+                return `${diffDays} ден${diffDays !== 1 ? 'а' : ''}`;
             }
         }
 
-        // Функција за креирање на категориите во навигацијата
-        function renderCategories() {
-            const categoriesContainer = document.getElementById('categories-container');
-            categoriesContainer.innerHTML = '';
-            
-            Object.keys(categories).forEach(category => {
-                const portalsInCategory = categories[category].filter(portal => !removedPortals.includes(portal));
-                if (portalsInCategory.length === 0) return;
+        // Функција за добивање на име на портал од URL
+        function getPortalName(url) {
+            try {
+                const domain = new URL(url).hostname;
+                return portalNames[domain] || domain;
+            } catch (e) {
+                return 'Портал';
+            }
+        }
+
+        // Функција за парсирање на RSS feed
+        async function parseRSSFeed(feedUrl) {
+            try {
+                // Користиме CORS proxy за да избегнеме CORS грешки
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const response = await fetch(proxyUrl + encodeURIComponent(feedUrl));
                 
-                const button = document.createElement('button');
-                button.className = `category-btn ${category === activeCategory ? 'active' : ''}`;
-                button.innerHTML = `
-                    ${category}
-                    <span class="portal-count">${portalsInCategory.length}</span>
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(text, "text/xml");
+                
+                // Проверка дали RSS feed-от е валиден
+                const parseError = xmlDoc.getElementsByTagName("parsererror")[0];
+                if (parseError) {
+                    throw new Error("Invalid RSS feed");
+                }
+                
+                const items = xmlDoc.getElementsByTagName("item");
+                const newsItems = [];
+                
+                for (let i = 0; i < Math.min(items.length, 10); i++) {
+                    const item = items[i];
+                    const title = item.getElementsByTagName("title")[0]?.textContent || "Без наслов";
+                    const link = item.getElementsByTagName("link")[0]?.textContent || feedUrl;
+                    const description = item.getElementsByTagName("description")[0]?.textContent || "";
+                    const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || new Date().toISOString();
+                    
+                    // Чистење на HTML од описот
+                    const cleanDescription = description.replace(/<[^>]*>/g, '').substring(0, 150) + '...';
+                    
+                    newsItems.push({
+                        title: title.trim(),
+                        link: link.trim(),
+                        description: cleanDescription,
+                        pubDate: pubDate,
+                        portal: getPortalName(feedUrl)
+                    });
+                }
+                
+                return newsItems;
+            } catch (error) {
+                console.error(`Error parsing RSS feed ${feedUrl}:`, error);
+                return [];
+            }
+        }
+
+        // Функција за вчитување на сите вести за категорија
+        async function loadCategoryNews(category) {
+            const feedUrls = rssFeeds[category];
+            const allPromises = feedUrls.map(url => parseRSSFeed(url));
+            
+            try {
+                const results = await Promise.allSettled(allPromises);
+                const newsItems = results
+                    .filter(result => result.status === 'fulfilled')
+                    .flatMap(result => result.value);
+                
+                // Сортирање по датум (најнови први)
+                newsItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+                
+                allNews[category] = newsItems;
+                return newsItems;
+            } catch (error) {
+                console.error(`Error loading news for ${category}:`, error);
+                return [];
+            }
+        }
+
+        // Функција за прикажување на вести
+        function renderNews(category) {
+            const newsContainer = document.getElementById('news-container');
+            const news = allNews[category];
+            
+            if (news.length === 0) {
+                newsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Нема вести во моментов</h3>
+                        <p>Вестите се вчитуваат или има проблем со сервисите.</p>
+                    </div>
                 `;
-                button.addEventListener('click', () => switchCategory(category));
-                categoriesContainer.appendChild(button);
+                return;
+            }
+            
+            let newsHTML = `<div class="category-section active">
+                <h2 class="category-title">${category === 'macedonia' ? 'Македонија' : 'Свет'}</h2>
+                <div class="news-grid">`;
+            
+            news.forEach(item => {
+                const timeAgo = formatTimeAgo(item.pubDate);
+                newsHTML += `
+                    <div class="news-card">
+                        <div class="news-content">
+                            <h3 class="news-title">
+                                <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
+                            </h3>
+                            <p class="news-description">${item.description}</p>
+                            <div class="news-meta">
+                                <span class="portal-name">${item.portal}</span>
+                                <span class="time-ago">${timeAgo}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
+            
+            newsHTML += `</div></div>`;
+            newsContainer.innerHTML = newsHTML;
         }
 
         // Функција за преминување помеѓу категории
@@ -590,155 +614,83 @@
             // Ажурирање на активната категорија во навигацијата
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.textContent.includes(category)) {
+                if (btn.getAttribute('data-category') === category) {
                     btn.classList.add('active');
                 }
             });
             
             // Прикажување на вестите за избраната категорија
-            renderNews();
-        }
-
-        // Функција за прикажување на вести
-        function renderNews() {
-            const newsContainer = document.getElementById('news-container');
-            
-            const portals = categories[activeCategory].filter(portal => !removedPortals.includes(portal));
-            
-            if (portals.length === 0) {
-                newsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <h3>Нема достапни портали во оваа категорија</h3>
-                        <p>Сите портали во оваа категорија се отстранети.</p>
+            if (allNews[category].length > 0) {
+                renderNews(category);
+            } else {
+                document.getElementById('news-container').innerHTML = `
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p>Вчитувам вести...</p>
                     </div>
                 `;
-                return;
-            }
-            
-            let newsHTML = `<div class="category-section active">
-                <h2 class="category-title">${activeCategory}</h2>
-                <div class="news-grid">`;
-            
-            // Прикажување на вести за секој портал
-            portals.forEach(portal => {
-                const newsForPortal = portalNews[portal] || [
-                    { title: "Актуелни вести од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk", time: Math.floor(Math.random() * 120) + 1 },
-                    { title: "Важни информации од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk", time: Math.floor(Math.random() * 120) + 1 },
-                    { title: "Извештаи и новости од " + portal, link: "https://" + portal.toLowerCase().replace(/\s+/g, '') + ".mk", time: Math.floor(Math.random() * 120) + 1 }
-                ];
-                
-                // Прикажување на повеќе вести за секој портал
-                newsForPortal.forEach(newsItem => {
-                    const timeAgo = formatTimeAgo(newsItem.time);
-                    newsHTML += `
-                        <div class="news-card" data-portal="${portal}">
-                            <div class="news-content">
-                                <h3 class="news-title">
-                                    <a href="${newsItem.link}" target="_blank" rel="noopener noreferrer">${newsItem.title}</a>
-                                </h3>
-                                <p class="news-description">${getNewsDescription(portal, newsItem.title)}</p>
-                                <div class="news-meta">
-                                    <span class="portal-name">${portal}</span>
-                                    <span class="time-ago">${timeAgo}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-            });
-            
-            newsHTML += `</div></div>`;
-            newsContainer.innerHTML = newsHTML;
-        }
-
-        // Помошна функција за генерирање опис на вести
-        function getNewsDescription(portal, title) {
-            const descriptions = {
-                "24 Вести": "Актуелни вести и најнови случувања од Македонија и светот.",
-                "ТВ21": "Телевизиски вести и репортажи од ТВ21.",
-                "Макфакс": "Дневни вести, анализи и бизнис извештаи.",
-                "Спортклуб": "Спортски вести, резултати и анализи.",
-                "IT.mk": "Технолошки новости и дигитални трендови.",
-                "Метео Аларм": "Временска прогноза и метеоролошки услови.",
-                "Deutsche Welle": "Меѓународни вести и анализи на македонски јазик.",
-                "Нова ТВ": "Телевизиски програми и вести од Нова ТВ.",
-                "Сакам да кажам": "Мислења, коментари и општествени дискусии.",
-                "Кајгана": "Рецепти, кулинарски совети и здравствена исхрана.",
-                "Авто Магазин": "Новости од светот на автомобилите и технички прегледи.",
-                "Д-р Митов": "Здравствени совети и медицински информации."
-            };
-            
-            return descriptions[portal] || "Актуелни вести и информации од " + portal + ".";
-        }
-
-        // Функција за отстранување на портал
-        function removePortal(portal) {
-            if (confirm(`Дали сте сигурни дека сакате да го избришете порталот "${portal}"?`)) {
-                if (!removedPortals.includes(portal)) {
-                    removedPortals.push(portal);
-                    localStorage.setItem('removedPortals', JSON.stringify(removedPortals));
-                    showNotification(`Порталот "${portal}" е избришан.`, 'success');
-                    renderCategories();
-                    renderNews();
-                }
+                loadCategoryNews(category).then(() => renderNews(category));
             }
         }
 
-        // Функција за ресетирање на сите отстранети портали
-        function resetRemovedPortals() {
-            if (confirm("Дали сте сигурни дека сакате да ги ресетирате сите отстранети портали?")) {
-                removedPortals = [];
-                localStorage.removeItem('removedPortals');
-                showNotification("Сите портали се вратени.", 'success');
-                renderCategories();
-                renderNews();
-            }
-        }
-
-        // Функција за ажурирање на вестите
-        function refreshNews() {
+        // Функција за ажурирање на сите вести
+        async function refreshAllNews() {
             showNotification("Вестите се ажурираат...", 'info');
             
-            // Симулирање на вчитување на нови вести
-            setTimeout(() => {
-                // Во реална ситуација, овде би се вчитале вистинските најнови вести
-                renderNews();
+            try {
+                await Promise.all([
+                    loadCategoryNews('macedonia'),
+                    loadCategoryNews('world')
+                ]);
+                
+                renderNews(activeCategory);
                 showNotification("Вестите се ажурирани успешно!", 'success');
-            }, 1000);
+            } catch (error) {
+                console.error('Error refreshing news:', error);
+                showNotification("Грешка при ажурирање на вестите", 'error');
+            }
         }
 
         // Функција за стартување на авто-освежување
         function startAutoRefresh() {
             // Поставување на интервал за авто-освежување на секои 15 минути
-            refreshInterval = setInterval(refreshNews, 15 * 60 * 1000);
+            refreshInterval = setInterval(refreshAllNews, 15 * 60 * 1000);
         }
 
         // Иницијализација на страната
-        document.addEventListener('DOMContentLoaded', function() {
-            renderCategories();
-            renderNews();
-            startAutoRefresh();
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Додавање на event listeners за категориите
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const category = btn.getAttribute('data-category');
+                    switchCategory(category);
+                });
+            });
             
             // Додавање на event listeners за линковите во footer-от
             document.getElementById('about-link').addEventListener('click', (e) => {
                 e.preventDefault();
-                alert("Вести Агрегатор - Македонија е непрофитен проект со цел да ги агрегира вестите од македонските портали на едно место. Оваа страна е open source и секој може да придонесе во нејзиниот развој.");
-            });
-            
-            document.getElementById('contact-link').addEventListener('click', (e) => {
-                e.preventDefault();
-                alert("За контакт, ве молиме испратете email на contact@vesti-agregator.mk");
-            });
-            
-            document.getElementById('reset-link').addEventListener('click', (e) => {
-                e.preventDefault();
-                resetRemovedPortals();
+                alert("Вести Агрегатор - Македонија е непрофитен проект со цел да ги агрегира вестите од македонските портали на едно место. Оваа страна користи RSS feeds за да ги прикаже најновите вести.");
             });
             
             document.getElementById('refresh-now-link').addEventListener('click', (e) => {
                 e.preventDefault();
-                refreshNews();
+                refreshAllNews();
             });
+            
+            // Вчитување на почетни вести
+            try {
+                await refreshAllNews();
+                startAutoRefresh();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                document.getElementById('news-container').innerHTML = `
+                    <div class="error-message">
+                        <strong>Грешка при вчитување на вестите</strong>
+                        <p>Обидете се повторно или проверете ја интернет врската.</p>
+                    </div>
+                `;
+            }
         });
     </script>
 </body>
