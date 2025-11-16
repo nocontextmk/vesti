@@ -1,1100 +1,558 @@
-<!DOCTYPE html>
-<html lang="mk">
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вести Агрегатор</title>
-    <style>
-        /* Google News стил со промени */
-        :root {
-            --primary: #1a73e8;
-            --text: #202124;
-            --secondary: #5f6368;
-            --border: #dadce0;
-            --background: #ffffff;
-            --card-bg: #ffffff;
-            --hover: #f8f9fa;
-            --header-bg: #ffffff;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BizPulse — Open Source Business RSS Aggregator</title>
+<meta name="description" content="Mobile-first business RSS aggregator (open-source) - lightweight, responsive, filterable." />
 
-        /* Dark mode variables */
-        [data-theme="dark"] {
-            --primary: #8ab4f8;
-            --text: #e8eaed;
-            --secondary: #9aa0a6;
-            --border: #5f6368;
-            --background: #202124;
-            --card-bg: #303134;
-            --hover: #3c4043;
-            --header-bg: #303134;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
-        }
-        
-        body {
-            background-color: var(--background);
-            color: var(--text);
-            line-height: 1.5;
-            min-height: 100vh;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        
-        /* Header Container */
-        .header-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            transition: transform 0.3s ease;
-        }
-        
-        /* Header - тесен */
-        header {
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border);
-            padding: 6px 0;
-            height: 40px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        .header-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .logo {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .logo-icon {
-            font-size: 18px;
-        }
-        
-        .theme-toggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--secondary);
-            padding: 4px;
-            border-radius: 50%;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .theme-toggle:hover {
-            background: var(--hover);
-        }
-        
-        .theme-icon {
-            width: 18px;
-            height: 18px;
-        }
-        
-        /* Navigation - Fixed и тесен */
-        nav {
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border);
-            height: 42px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .categories {
-            display: flex;
-            overflow-x: auto;
-            padding: 0;
-            gap: 0;
-            scrollbar-width: none;
-            height: 100%;
-            align-items: center;
-        }
-        
-        .categories::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .category-btn {
-            background: none;
-            border: none;
-            padding: 8px 14px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--secondary);
-            white-space: nowrap;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s ease;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-        
-        .category-btn:hover {
-            background: var(--hover);
-            color: var(--text);
-        }
-        
-        .category-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-        
-        /* Главна содржина - padding за фиксени хедери */
-        main {
-            padding: 82px 0 20px 0; /* 40px header + 42px nav */
-        }
-        
-        .news-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 16px;
-        }
-        
-        .news-card {
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        
-        .news-card:hover {
-            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .news-content {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .news-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-        }
-        
-        .news-text {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .news-title {
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 1.4;
-            margin-bottom: 8px;
-        }
-        
-        .news-title a {
-            color: inherit;
-            text-decoration: none;
-        }
-        
-        .news-title a:hover {
-            text-decoration: underline;
-        }
-        
-        .news-image {
-            width: 80px;
-            height: 60px;
-            border-radius: 4px;
-            overflow: hidden;
-            flex-shrink: 0;
-            background: var(--hover);
-        }
-        
-        .news-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .news-meta {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--secondary);
-        }
-        
-        .portal-icon {
-            width: 16px;
-            height: 16px;
-            border-radius: 2px;
-            object-fit: cover;
-        }
-        
-        .portal-name {
-            font-weight: 500;
-        }
-        
-        .time-ago {
-            margin-left: auto;
-        }
-        
-        .news-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-        }
-        
-        .share-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--secondary);
-            padding: 4px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .share-btn:hover {
-            background: var(--hover);
-            color: var(--primary);
-        }
-        
-        .share-icon {
-            width: 16px;
-            height: 16px;
-        }
-        
-        /* Footer */
-        footer {
-            background: var(--header-bg);
-            border-top: 1px solid var(--border);
-            padding: 20px 0;
-            margin-top: 40px;
-        }
-        
-        .footer-content {
-            text-align: center;
-        }
-        
-        .footer-links {
-            margin: 15px 0;
-        }
-        
-        .footer-links a {
-            color: var(--secondary);
-            margin: 0 10px;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        
-        .footer-links a:hover {
-            color: var(--primary);
-            text-decoration: underline;
-        }
-        
-        .disclaimer {
-            font-size: 12px;
-            color: var(--secondary);
-            margin-top: 10px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.4;
-        }
-        
-        .copyright {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border);
-            font-size: 12px;
-            color: var(--secondary);
-        }
-        
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--secondary);
-        }
-        
-        .loading-spinner {
-            border: 2px solid var(--hover);
-            border-top: 2px solid var(--primary);
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Нотификации */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            z-index: 1000;
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
-            max-width: 300px;
-            font-size: 14px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.success {
-            background-color: #0f9d58;
-        }
-        
-        .notification.error {
-            background-color: #db4437;
-        }
-        
-        .notification.info {
-            background-color: var(--primary);
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                width: 95%;
-                padding: 0 10px;
-            }
-            
-            .header-content {
-                gap: 15px;
-            }
-            
-            .logo {
-                font-size: 14px;
-            }
-            
-            .news-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            
-            .categories {
-                padding: 0;
-            }
-            
-            .category-btn {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-            
-            .news-image {
-                width: 70px;
-                height: 50px;
-            }
-            
-            main {
-                padding: 72px 0 20px 0; /* Помали хедери на мобилен */
-            }
-            
-            header {
-                height: 36px;
-                padding: 4px 0;
-            }
-            
-            nav {
-                height: 36px;
-            }
-        }
-        
-        /* Дополнителни стилови */
-        .news-stats {
-            font-size: 14px;
-            color: var(--secondary);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .error-message {
-            background: #fce8e6;
-            padding: 16px;
-            border-radius: 8px;
-            margin: 20px 0;
-            color: #c5221f;
-            font-size: 14px;
-            text-align: center;
-            border: 1px solid #f5c0b8;
-        }
-        
-        [data-theme="dark"] .error-message {
-            background: #3c1a17;
-            color: #f28b82;
-            border-color: #5c302b;
-        }
-        
-        .image-placeholder {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 10px;
-            font-weight: 500;
-        }
-        
-        /* Share modal */
-        .share-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .share-modal.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .share-content {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .share-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 15px;
-            color: var(--text);
-        }
-        
-        .share-url {
-            background: var(--hover);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 10px;
-            font-size: 14px;
-            margin-bottom: 15px;
-            word-break: break-all;
-            color: var(--text);
-        }
-        
-        .share-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-        
-        .share-copy {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .share-copy:hover {
-            background: #0d66d0;
-        }
-        
-        [data-theme="dark"] .share-copy:hover {
-            background: #aecbfa;
-        }
-        
-        .share-close {
-            background: var(--hover);
-            color: var(--text);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        
-        .share-close:hover {
-            background: var(--border);
-        }
-    </style>
+<style>
+/* ========== Mobile-first styles ========== */
+:root{
+--bg: #ffffff;
+--text: #111827;
+--muted: #6b7280;
+--accent: #0ea5a4;
+--card: #f8fafc;
+--max-width: 1100px;
+--gap: 12px;
+--radius: 10px;
+--shadow: 0 6px 18px rgba(16,24,40,0.06);
+font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+.container{
+max-width:var(--max-width);
+margin:0 auto;
+padding:16px;
+}
+
+/* Header */
+.header{
+display:flex;
+gap:12px;
+align-items:center;
+justify-content:space-between;
+margin-bottom:12px;
+}
+.brand{
+display:flex;
+gap:10px;
+align-items:center;
+}
+.logo{
+width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#0ea5a4,#06b6d4);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;box-shadow:var(--shadow)
+}
+.title{font-size:1.05rem;font-weight:600}
+.subtitle{font-size:0.8rem;color:var(--muted)}
+
+/* Controls */
+.controls{display:flex;gap:8px;align-items:center}
+.select, .search {
+padding:8px 10px;border-radius:8px;border:1px solid #e6e9ee;background:white;font-size:0.95rem;
+min-width:120px;
+}
+.btn {
+border:0;padding:9px 12px;border-radius:8px;background:var(--accent);color:white;font-weight:600;
+display:inline-flex;gap:8px;align-items:center;cursor:pointer;
+}
+
+/* Layout: feed list (left) and reader (right) - single column on mobile */
+.layout{
+display:grid;
+grid-template-columns: 1fr;
+gap:var(--gap);
+}
+
+/* Feed list card */
+.feed-card{
+background:var(--card);
+border-radius:var(--radius);
+padding:10px;
+box-shadow:var(--shadow);
+}
+.feed-list{
+display:flex;
+flex-direction:column;
+gap:8px;
+max-height:60vh;
+overflow:auto;
+padding-right:4px;
+}
+.article{
+display:flex;
+gap:10px;
+padding:8px;
+border-radius:8px;
+cursor:pointer;
+align-items:flex-start;
+transition:background .12s ease;
+}
+.article:hover{background:rgba(14,165,164,0.05)}
+.article .meta{font-size:12px;color:var(--muted)}
+.article .title{font-weight:600;font-size:0.98rem;margin-bottom:4px}
+.article .excerpt{font-size:0.9rem;color:var(--muted);line-height:1.2;}
+
+/* Reader pane */
+.reader{
+background:linear-gradient(180deg,white, #fbfdff);
+border-radius:var(--radius);
+padding:12px;
+box-shadow:var(--shadow);
+}
+.reader h2{margin:0 0 6px 0}
+.reader .source{font-size:13px;color:var(--muted);margin-bottom:10px}
+.reader .content{font-size:0.98rem;line-height:1.45;color:var(--text)}
+.reader .open-link{display:inline-block;margin-top:12px;padding:8px 10px;border-radius:8px;border:1px solid #e6eef0;background:white;color:var(--accent);text-decoration:none;font-weight:600}
+
+/* Tiny tag */
+.tag{
+display:inline-block;padding:6px 8px;border-radius:999px;font-size:12px;background:rgba(14,165,164,0.08);color:var(--accent);border:1px solid rgba(14,165,164,0.12);font-weight:600;margin-right:6px
+}
+
+/* Empty state */
+.empty{padding:18px;text-align:center;color:var(--muted)}
+
+/* Responsive — tablet and up: two-column layout */
+@media(min-width:800px){
+.layout{grid-template-columns: 380px 1fr}
+.feed-list{max-height:75vh}
+}
+
+/* Large desktop: show cards centered */
+@media(min-width:1200px){
+.container{padding:24px}
+}
+</style>
 </head>
 <body>
-    <div class="header-container" id="header-container">
-        <header id="main-header">
-            <div class="container">
-                <div class="header-content">
-                    <div class="logo">
-                        <span class="logo-icon">📰</span>
-                        Вести Агрегатор
-                    </div>
-                    <button class="theme-toggle" id="theme-toggle" aria-label="Промени тема">
-                        <svg class="theme-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12,7C14.8,7 17,9.2 17,12C17,14.8 14.8,17 12,17C9.2,17 7,14.8 7,12C7,9.2 9.2,7 12,7M12,9C10.3,9 9,10.3 9,12C9,13.7 10.3,15 12,15C13.7,15 15,13.7 15,12C15,10.3 13.7,9 12,9M12,2L14.4,6.9L20,7.3L16.5,11.2L17.5,16.7L12,14.2L6.5,16.7L7.5,11.2L4,7.3L9.6,6.9L12,2Z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </header>
-        
-        <nav id="categories-nav">
-            <div class="container">
-                <div class="categories">
-                    <button class="category-btn active" data-category="macedonia">Македонија</button>
-                    <button class="category-btn" data-category="world">Свет</button>
-                </div>
-            </div>
-        </nav>
-    </div>
-    
-    <main class="container">
-        <div id="news-container">
-            <div class="loading">
-                <div class="loading-spinner"></div>
-                <p>Вчитувам вести...</p>
-            </div>
-        </div>
-    </main>
-    
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="#" id="refresh-now-link">Ажурирај сега</a>
-                </div>
-                <div class="disclaimer">
-                    <p>Сите вести се преземаат од јавно достапни RSS извори. Страната автоматски се ажурира на секои 15 минути.</p>
-                </div>
-                <div class="copyright">
-                    <p>&copy; 2023 Вести Агрегатор</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+<div class="container" id="app">
+<div class="header">
+<div class="brand">
+<div class="logo">BP</div>
+<div>
+<div class="title">BizPulse</div>
+<div class="subtitle">Open-source business & tech RSS aggregator — mobile-first</div>
+</div>
+</div>
 
-    <!-- Share Modal -->
-    <div id="share-modal" class="share-modal">
-        <div class="share-content">
-            <div class="share-title">Сподели вест</div>
-            <div id="share-url" class="share-url"></div>
-            <div class="share-buttons">
-                <button id="share-close" class="share-close">Затвори</button>
-                <button id="share-copy" class="share-copy">Копирај линк</button>
-            </div>
-        </div>
-    </div>
+<div class="controls">
+<select id="categorySelect" class="select" aria-label="Category">
+<!-- categories (prepopulated in JS too) -->
+</select>
 
-    <div id="notification" class="notification"></div>
+<input id="searchBox" class="search" placeholder="Search headlines..." />
 
-    <script>
-        // RSS линкови
-        const rssFeeds = {
-            macedonia: [
-                'https://plusinfo.mk/category/makedoni-a/feed/',
-                'https://zurnal.mk/category/makedonija/feed/',
-                'https://sdk.mk/index.php/category/makedonija/feed/',
-                'https://makfax.com.mk/makedonija/feed/'
-            ],
-            world: [
-                'https://sdk.mk/index.php/category/svet/feed/',
-                'https://makfax.com.mk/svet/feed/',
-                'https://zurnal.mk/category/svet/feed/'
-            ]
-        };
+<button id="refreshBtn" class="btn" title="Refresh feeds">Refresh</button>
+</div>
+</div>
 
-        const portalNames = {
-            'plusinfo.mk': '+инфо',
-            'zurnal.mk': 'Журнал',
-            'sdk.mk': 'СДК',
-            'makfax.com.mk': 'Макфакс'
-        };
+<div class="layout">
+<!-- Left: feed list -->
+<div class="feed-card" aria-live="polite">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+<strong>Articles</strong>
+<small id="status" class="subtitle">loading…</small>
+</div>
 
-        const portalIcons = {
-            'plusinfo.mk': 'https://plusinfo.mk/favicon.ico',
-            'zurnal.mk': 'https://zurnal.mk/favicon.ico',
-            'sdk.mk': 'https://sdk.mk/favicon.ico',
-            'makfax.com.mk': 'https://makfax.com.mk/favicon.ico'
-        };
+<div id="feedSlots" style="margin-bottom:8px;color:var(--muted);font-size:13px">
+<!-- show feed slots & edit hints -->
+</div>
 
-        let activeCategory = 'macedonia';
-        let allNews = { macedonia: [], world: [] };
-        let refreshInterval;
-        let cacheTimestamp = { macedonia: 0, world: 0 };
-        const CACHE_DURATION = 15 * 60 * 1000;
+<div id="feedList" class="feed-list">
+<!-- articles will be injected here -->
+</div>
 
-        // Scroll handling variables
-        let lastScrollY = window.scrollY;
-        let ticking = false;
+<div style="margin-top:10px;font-size:12px;color:var(--muted)">
+<div style="margin-bottom:6px"><strong>Sources:</strong> (proxied) — to protect URLs replace proxy with your own server.</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap" id="sourceChips"></div>
+</div>
+</div>
 
-        // Нотификации
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
+<!-- Right: reader -->
+<div class="reader" id="readerPane">
+<div id="readerEmpty" class="empty">
+<div style="font-weight:700;margin-bottom:8px">No article selected</div>
+<div>Tap an article to read a preview. On larger screens you'll see list + detail side-by-side.</div>
+</div>
 
-        // Dark mode functionality
-        function initDarkMode() {
-            const themeToggle = document.getElementById('theme-toggle');
-            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-            const currentTheme = localStorage.getItem('theme');
-            
-            // Set initial theme
-            if (currentTheme === 'dark' || (!currentTheme && prefersDarkScheme.matches)) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                updateThemeIcon(true);
-            } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                updateThemeIcon(false);
-            }
-            
-            // Toggle theme on button click
-            themeToggle.addEventListener('click', () => {
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                if (isDark) {
-                    document.documentElement.setAttribute('data-theme', 'light');
-                    localStorage.setItem('theme', 'light');
-                    updateThemeIcon(false);
-                } else {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('theme', 'dark');
-                    updateThemeIcon(true);
-                }
-            });
-        }
+<article id="readerContent" style="display:none">
+<div id="readerTags" style="margin-bottom:8px"></div>
+<h2 id="readerTitle"></h2>
+<div class="source" id="readerSource"></div>
+<div class="content" id="readerBody"></div>
+<a id="readerLink" class="open-link" target="_blank" rel="noopener">Open original</a>
+</article>
+</div>
+</div>
+</div>
 
-        // Update theme icon based on current theme
-        function updateThemeIcon(isDark) {
-            const themeIcon = document.querySelector('.theme-icon');
-            if (isDark) {
-                themeIcon.innerHTML = '<path d="M12,7C14.8,7 17,9.2 17,12C17,14.8 14.8,17 12,17C9.2,17 7,14.8 7,12C7,9.2 9.2,7 12,7M12,9C10.3,9 9,10.3 9,12C9,13.7 10.3,15 12,15C13.7,15 15,13.7 15,12C15,10.3 13.7,9 12,9M12,2L14.4,6.9L20,7.3L16.5,11.2L17.5,16.7L12,14.2L6.5,16.7L7.5,11.2L4,7.3L9.6,6.9L12,2Z"/>';
-            } else {
-                themeIcon.innerHTML = '<path d="M12,18C8.7,18 6,15.3 6,12C6,8.7 8.7,6 12,6C15.3,6 18,8.7 18,12C18,15.3 15.3,18 12,18M12,8C9.8,8 8,9.8 8,12C8,14.2 9.8,16 12,16C14.2,16 16,14.2 16,12C16,9.8 14.2,8 12,8M12,4C7.6,4 4,7.6 4,12C4,16.4 7.6,20 12,20C16.4,20 20,16.4 20,12C20,7.6 16.4,4 12,4M12,2C17.5,2 22,6.5 22,12C22,17.5 17.5,22 12,22C6.5,22 2,17.5 2,12C2,6.5 6.5,2 12,2Z"/>';
-            }
-        }
+<script>
+/*
+BizPulse - single-file frontend RSS aggregator
+- Mobile-first responsive UI
+- Feeds are proxied via ALLORIGINS by default (replace PROXY_URL to use your own proxy)
+- Only front-end languages (HTML/CSS/JS), ready for GitHub Pages
+*/
 
-        // Scroll handling for header
-        function initScrollHandling() {
-            const headerContainer = document.getElementById('header-container');
-            let isHeaderHidden = false;
-            
-            function updateHeaderVisibility() {
-                const scrollY = window.scrollY;
-                
-                // Hide header when scrolling down, show when at top or scrolling up
-                if (scrollY > 50 && scrollY > lastScrollY) {
-                    if (!isHeaderHidden) {
-                        headerContainer.style.transform = 'translateY(-40px)'; // Само горниот хедер се крие
-                        isHeaderHidden = true;
-                    }
-                } else if (scrollY < 30 || scrollY < lastScrollY) {
-                    if (isHeaderHidden) {
-                        headerContainer.style.transform = 'translateY(0)';
-                        isHeaderHidden = false;
-                    }
-                }
-                
-                lastScrollY = scrollY;
-                ticking = false;
-            }
-            
-            function onScroll() {
-                if (!ticking) {
-                    requestAnimationFrame(updateHeaderVisibility);
-                    ticking = true;
-                }
-            }
-            
-            window.addEventListener('scroll', onScroll);
-        }
+/* ========== Config ========== */
 
-        // Форматирање време
-        function formatTimeAgo(pubDate) {
-            const now = new Date();
-            const publishTime = new Date(pubDate);
-            const diffMs = now - publishTime;
-            const diffMins = Math.floor(diffMs / (1000 * 60));
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-            
-            if (diffMins < 60) {
-                return `${diffMins} мин`;
-            } else if (diffHours < 24) {
-                return `${diffHours}Ч`;
-            } else {
-                return `${diffDays} ден${diffDays !== 1 ? 'а' : ''}`;
-            }
-        }
+/*
+* IMPORTANT: For better privacy/protection of source URLs, host your own simple proxy:
+* e.g. /proxy?url=<encoded-rss-url> that fetches the RSS server-side and returns the XML.
+* For development you can keep using ALLORIGINS, but note that feed URLs included in JS are visible client-side.
+*/
+const PROXY_URL = 'https://api.allorigins.win/raw?url='; // default proxy - change to your own proxy for production
 
-        // Име на портал
-        function getPortalName(url) {
-            try {
-                const domain = new URL(url).hostname;
-                return portalNames[domain] || domain;
-            } catch (e) {
-                return 'Портал';
-            }
-        }
+/* Categories + feeds
+Fill '#' slots with real RSS URLs later. Each slot is an array of feed URLs for that category.
+*/
+const CATEGORIES = {
+"All": [
+// global aggregator: add important feeds here
+// We'll add the user's seeds below programmatically
+],
+"Startups": ["#"],
+"Small Business": ["#"],
+"Tech (business)": ["#"],
+"Finance": ["#"],
+"Funding / VC": ["#"],
+"Management & Ops": ["#"],
+"Europe / Local": ["#"],
+"Global": ["#"]
+};
 
-        // Иконка на портал
-        function getPortalIcon(url) {
-            try {
-                const domain = new URL(url).hostname;
-                return portalIcons[domain] || `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-            } catch (e) {
-                return 'https://www.google.com/s2/favicons?domain=example.com&sz=32';
-            }
-        }
+/* Add user's initial feeds (they will appear in 'All' and can be assigned to categories later) */
+const seedFeeds = [
+"https://feeds.bbci.co.uk/news/business/rss.xml",
+"https://www.forbes.com/business/feed",
+"https://bmmagazine.co.uk/in-business/feed"
+];
+// place seeds into 'All'
+CATEGORIES["All"].push(...seedFeeds);
 
-        // Екстракт слика од RSS
-        function extractImageFromRSS(item) {
-            // Пробај да ја најдеш сликата од различни полиња
-            const enclosure = item.getElementsByTagName('enclosure')[0];
-            if (enclosure && enclosure.getAttribute('type')?.startsWith('image/')) {
-                return enclosure.getAttribute('url');
-            }
+/* Settings */
+const MAX_ARTICLES = 80; // cap to keep UI snappy
+const FETCH_TIMEOUT = 15000; // ms
 
-            const mediaContent = item.getElementsByTagName('media:content')[0];
-            if (mediaContent && mediaContent.getAttribute('medium') === 'image') {
-                return mediaContent.getAttribute('url');
-            }
+/* ========== Utilities ========== */
 
-            const description = item.getElementsByTagName('description')[0]?.textContent || '';
-            const imgMatch = description.match(/<img[^>]+src="([^">]+)"/);
-            if (imgMatch) {
-                return imgMatch[1];
-            }
+function q(sel, root = document) { return root.querySelector(sel) }
+function qa(sel, root = document) { return Array.from(root.querySelectorAll(sel)) }
 
-            return null;
-        }
+function setStatus(text){ q('#status').textContent = text }
 
-        // Брз proxy
-        function getFastProxyUrl(url) {
-            const proxies = [
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`
-            ];
-            return proxies[Math.floor(Math.random() * proxies.length)];
-        }
+/* Safe fetch with timeout */
+async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
+const controller = new AbortController();
+const id = setTimeout(() => controller.abort(), timeout);
+try {
+const res = await fetch(url, { signal: controller.signal });
+clearTimeout(id);
+if (!res.ok) throw new Error('Network error: ' + res.status);
+const txt = await res.text();
+return txt;
+} catch (err) {
+clearTimeout(id);
+throw err;
+}
+}
 
-        // Парсирање RSS
-        async function parseRSSFeed(feedUrl) {
-            return new Promise(async (resolve) => {
-                const timeout = setTimeout(() => resolve([]), 5000);
+/* Parse RSS / Atom generically into unified article objects */
+function parseFeed(xmlText, feedUrl) {
+try {
+const parser = new DOMParser();
+const doc = parser.parseFromString(xmlText, "text/xml");
+// detect items (rss) vs entries (atom)
+const items = doc.querySelectorAll("item, entry");
+const channelTitle = (doc.querySelector("channel > title") || doc.querySelector("feed > title"))?.textContent || extractHostname(feedUrl);
+const articles = [];
+items.forEach(it => {
+const title = (it.querySelector("title") || {}).textContent || "No title";
+const linkNode = it.querySelector("link");
+let link = "";
+if (linkNode) {
+link = linkNode.getAttribute('href') || linkNode.textContent || "";
+} else {
+const guid = it.querySelector("guid");
+link = guid ? guid.textContent : "";
+}
+const pub = (it.querySelector("pubDate") || it.querySelector("published") || it.querySelector("updated"))?.textContent;
+const isoDate = pub ? new Date(pub) : null;
+const description = (it.querySelector("description") || it.querySelector("summary") || it.querySelector("content"))?.textContent || "";
+const clean = sanitizeHTML(description);
+articles.push({
+title: cleanText(title),
+link: link || feedUrl,
+isoDate: isoDate ? isoDate.toISOString() : null,
+source: channelTitle,
+snippet: getSnippet(clean),
+raw: description,
+feedUrl
+});
+});
+return articles;
+} catch (err) {
+console.warn("Parse error for", feedUrl, err);
+return [];
+}
+}
 
-                try {
-                    const proxyUrl = getFastProxyUrl(feedUrl);
-                    const response = await fetch(proxyUrl);
-                    
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    const text = await response.text();
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(text, "text/xml");
-                    
-                    const items = xmlDoc.getElementsByTagName("item");
-                    const newsItems = [];
-                    
-                    for (let i = 0; i < Math.min(items.length, 10); i++) {
-                        const item = items[i];
-                        const title = item.getElementsByTagName("title")[0]?.textContent || "Без наслов";
-                        const link = item.getElementsByTagName("link")[0]?.textContent || feedUrl;
-                        const description = item.getElementsByTagName("description")[0]?.textContent || "";
-                        const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || new Date().toISOString();
-                        
-                        const imageUrl = extractImageFromRSS(item);
-                        const cleanDescription = description
-                            .replace(/<[^>]*>/g, '')
-                            .substring(0, 120);
-                        
-                        newsItems.push({
-                            title: title.trim(),
-                            link: link.trim(),
-                            description: cleanDescription,
-                            pubDate: pubDate,
-                            portal: getPortalName(feedUrl),
-                            portalIcon: getPortalIcon(feedUrl),
-                            imageUrl: imageUrl,
-                            timestamp: Date.now()
-                        });
-                    }
-                    
-                    clearTimeout(timeout);
-                    resolve(newsItems);
-                } catch (error) {
-                    console.error(`Error parsing RSS feed ${feedUrl}:`, error);
-                    clearTimeout(timeout);
-                    resolve([]);
-                }
-            });
-        }
+function sanitizeHTML(html) {
+// Basic sanitize: remove script/style tags and decode HTML entities by using DOM
+if (!html) return "";
+const parser = new DOMParser();
+const doc = parser.parseFromString(html, "text/html");
+// remove scripts/styles
+qa('script, style', doc).forEach(n => n.remove());
+// get text content with some simple line breaks
+return doc.body.textContent || "";
+}
 
-        // Вчитување вести
-        async function loadCategoryNews(category) {
-            const feedUrls = rssFeeds[category];
-            const now = Date.now();
-            
-            if (now - cacheTimestamp[category] < CACHE_DURATION && allNews[category].length > 0) {
-                return allNews[category];
-            }
-            
-            const promises = feedUrls.map(url => parseRSSFeed(url));
-            
-            try {
-                const results = await Promise.allSettled(promises);
-                const newsItems = results
-                    .filter(result => result.status === 'fulfilled')
-                    .flatMap(result => result.value);
-                
-                newsItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-                
-                allNews[category] = newsItems;
-                cacheTimestamp[category] = now;
-                return newsItems;
-            } catch (error) {
-                console.error(`Error loading news for ${category}:`, error);
-                return allNews[category] || [];
-            }
-        }
+function cleanText(t) { return (t||"").replace(/\s+/g,' ').trim() }
+function getSnippet(text, len = 220) {
+const s = cleanText(text).replace(/\s+/g,' ');
+return s.length > len ? s.slice(0,len).trim() + '…' : s;
+}
+function extractHostname(url){
+try{ return (new URL(url)).hostname }catch(e){return url}
+}
 
-        // Share функционалност
-        function setupShareModal() {
-            const shareModal = document.getElementById('share-modal');
-            const shareClose = document.getElementById('share-close');
-            const shareCopy = document.getElementById('share-copy');
-            const shareUrl = document.getElementById('share-url');
-            
-            shareClose.addEventListener('click', () => {
-                shareModal.classList.remove('show');
-            });
-            
-            shareCopy.addEventListener('click', () => {
-                const url = shareUrl.textContent;
-                navigator.clipboard.writeText(url).then(() => {
-                    showNotification('Линкот е копиран!', 'success');
-                    shareModal.classList.remove('show');
-                }).catch(() => {
-                    showNotification('Грешка при копирање', 'error');
-                });
-            });
-            
-            // Затвори при клик надвор од модалот
-            shareModal.addEventListener('click', (e) => {
-                if (e.target === shareModal) {
-                    shareModal.classList.remove('show');
-                }
-            });
-        }
+/* Merge, dedupe by link/title, sort by date descending */
+function mergeAndSort(allArticles) {
+const map = new Map();
+allArticles.forEach(a => {
+const key = (a.link || a.title).slice(0,400);
+if (!map.has(key)) map.set(key, a);
+});
+const arr = Array.from(map.values());
+arr.sort((a,b) => {
+if (a.isoDate && b.isoDate) return new Date(b.isoDate) - new Date(a.isoDate);
+if (a.isoDate) return -1;
+if (b.isoDate) return 1;
+return 0;
+});
+return arr.slice(0, MAX_ARTICLES);
+}
 
-        // Прикажување вести
-        function renderNews(category, news) {
-            const newsContainer = document.getElementById('news-container');
-            
-            if (!news || news.length === 0) {
-                newsContainer.innerHTML = `
-                    <div class="error-message">
-                        <p>Нема вести во моментов. Обидете се повторно.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const timeAgo = formatTimeAgo(news[0]?.timestamp || new Date());
-            
-            let newsHTML = `
-                <div class="news-stats">
-                    Ажурирано пред ${timeAgo} • ${news.length} вести
-                </div>
-                <div class="news-grid">
-            `;
-            
-            news.forEach(item => {
-                const itemTimeAgo = formatTimeAgo(item.pubDate);
-                const imageHTML = item.imageUrl ? 
-                    `<img src="${item.imageUrl}" alt="${item.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'image-placeholder\\'>${item.portal}</div>';" />` :
-                    `<div class="image-placeholder">${item.portal}</div>`;
-                
-                newsHTML += `
-                    <div class="news-card">
-                        <div class="news-content">
-                            <div class="news-header">
-                                <div class="news-text">
-                                    <h3 class="news-title">
-                                        <a href="${item.link}" target="_blank" rel="noopener noreferrer">${item.title}</a>
-                                    </h3>
-                                </div>
-                                <div class="news-image">
-                                    ${imageHTML}
-                                </div>
-                            </div>
-                            <div class="news-actions">
-                                <div class="news-meta">
-                                    <img src="${item.portalIcon}" class="portal-icon" alt="${item.portal}" onerror="this.src='https://www.google.com/s2/favicons?domain=${item.portal}.mk&sz=32'" />
-                                    <span class="portal-name">${item.portal}</span>
-                                    <span class="time-ago">${itemTimeAgo}</span>
-                                </div>
-                                <button class="share-btn" data-url="${item.link}" data-title="${item.title}">
-                                    <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            newsHTML += `</div>`;
-            newsContainer.innerHTML = newsHTML;
-            
-            // Додавање event listeners за share копчиња
-            document.querySelectorAll('.share-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const url = btn.getAttribute('data-url');
-                    const title = btn.getAttribute('data-title');
-                    const shareModal = document.getElementById('share-modal');
-                    const shareUrl = document.getElementById('share-url');
-                    
-                    shareUrl.textContent = url;
-                    shareModal.classList.add('show');
-                });
-            });
-        }
+/* ========== UI rendering ========== */
 
-        // Смена на категорија
-        async function switchCategory(category) {
-            activeCategory = category;
-            
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-category') === category) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            if (allNews[category].length > 0) {
-                renderNews(category, allNews[category]);
-            } else {
-                document.getElementById('news-container').innerHTML = `
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <p>Вчитувам вести...</p>
-                    </div>
-                `;
-            }
-            
-            const news = await loadCategoryNews(category);
-            renderNews(category, news);
-        }
+function renderCategoryOptions() {
+const sel = q('#categorySelect');
+sel.innerHTML = '';
+Object.keys(CATEGORIES).forEach(cat => {
+const opt = document.createElement('option');
+opt.value = cat;
+opt.textContent = cat;
+sel.appendChild(opt);
+});
+}
 
-        // Ажурирање вести
-        async function refreshAllNews() {
-            showNotification("Вестите се ажурираат...", 'info');
-            
-            try {
-                const [macedoniaNews, worldNews] = await Promise.all([
-                    loadCategoryNews('macedonia'),
-                    loadCategoryNews('world')
-                ]);
-                
-                allNews.macedonia = macedoniaNews;
-                allNews.world = worldNews;
-                
-                renderNews(activeCategory, allNews[activeCategory]);
-                showNotification("Вестите се ажурирани", 'success');
-            } catch (error) {
-                console.error('Error refreshing news:', error);
-                showNotification("Грешка при ажурирање", 'error');
-            }
-        }
+function renderFeedSlots() {
+const container = q('#feedSlots');
+container.innerHTML = '';
+Object.keys(CATEGORIES).forEach(cat => {
+const feeds = CATEGORIES[cat];
+const div = document.createElement('div');
+div.style.marginBottom='6px';
+div.innerHTML = `<strong>${cat}</strong> — ${feeds.map(f => {
+return `<small style="margin-left:6px;color:${f==='#'?'#b91c1c':'var(--muted)'}">${f==='#'?'(empty)':'(configured)'}</small>`;
+}).join(' ')}`;
+container.appendChild(div);
+});
+}
 
-        // Авто-освежување
-        function startAutoRefresh() {
-            refreshInterval = setInterval(refreshAllNews, 15 * 60 * 1000);
-        }
+function renderSourceChips() {
+const chipWrap = q('#sourceChips');
+chipWrap.innerHTML = '';
+const all = new Set();
+Object.values(CATEGORIES).flat().forEach(f => { if(f && f!=='#') all.add(f) });
+Array.from(all).slice(0,12).forEach(url => {
+const el = document.createElement('div');
+el.style.padding='6px 8px';
+el.style.border='1px solid #e6eef0';
+el.style.borderRadius='999px';
+el.style.fontSize='13px';
+el.style.color='var(--muted)';
+el.textContent = extractHostname(url);
+chipWrap.appendChild(el);
+});
+}
 
-        // Иницијализација
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Иницијализирај dark mode
-            initDarkMode();
-            
-            // Иницијализирај scroll handling
-            initScrollHandling();
-            
-            // Сетуп на share modal
-            setupShareModal();
-            
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const category = btn.getAttribute('data-category');
-                    switchCategory(category);
-                });
-            });
-            
-            document.getElementById('refresh-now-link').addEventListener('click', (e) => {
-                e.preventDefault();
-                refreshAllNews();
-            });
-            
-            try {
-                await switchCategory('macedonia');
-                startAutoRefresh();
-            } catch (error) {
-                console.error('Error initializing app:', error);
-                document.getElementById('news-container').innerHTML = `
-                    <div class="error-message">
-                        <p>Грешка при вчитување. Обидете се повторно.</p>
-                    </div>
-                `;
-            }
-        });
-    </script>
+/* Render article list */
+function renderArticles(articles) {
+const list = q('#feedList');
+list.innerHTML = '';
+if (!articles.length) {
+list.innerHTML = `<div class="empty">No articles found. Try Refresh or choose another category.</div>`;
+setStatus('no articles');
+return;
+}
+setStatus(articles.length + ' items');
+articles.forEach((a, idx) => {
+const item = document.createElement('div');
+item.className = 'article';
+item.tabIndex = 0;
+item.dataset.index = idx;
+item.innerHTML = `
+<div style="flex:1">
+<div class="title">${escapeHtml(a.title)}</div>
+<div class="meta">${a.source} • ${a.isoDate ? new Date(a.isoDate).toLocaleString() : 'unknown time'}</div>
+<div class="excerpt">${escapeHtml(a.snippet)}</div>
+</div>
+`;
+item.addEventListener('click', () => showArticle(a));
+item.addEventListener('keydown', (e)=>{ if(e.key==='Enter') showArticle(a) });
+list.appendChild(item);
+});
+}
+
+/* Reader display */
+function showArticle(a) {
+q('#readerEmpty').style.display = 'none';
+const art = q('#readerContent');
+art.style.display = 'block';
+q('#readerTags').innerHTML = `<span class="tag">${a.source}</span>`;
+q('#readerTitle').textContent = a.title;
+q('#readerSource').textContent = `${a.source} • ${a.isoDate ? new Date(a.isoDate).toLocaleString() : ''}`;
+q('#readerBody').textContent = a.snippet + (a.raw ? '\n\n' + sanitizeHTML(a.raw).slice(0,2000) : '');
+q('#readerLink').href = a.link;
+}
+
+/* small HTML escaping helper */
+function escapeHtml(s){
+return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+/* ========== Fetching logic ========== */
+
+async function fetchFeedUrl(rawUrl) {
+// Skip empty placeholders
+if (!rawUrl || rawUrl === '#') return [];
+try {
+const proxied = PROXY_URL + encodeURIComponent(rawUrl);
+const text = await fetchWithTimeout(proxied);
+const articles = parseFeed(text, rawUrl);
+return articles;
+} catch (err) {
+console.warn('Failed to fetch', rawUrl, err);
+return [];
+}
+}
+
+/* Fetch all feeds for a given category (or all) */
+async function fetchCategoryFeeds(category) {
+setStatus('fetching…');
+const feedUrls = [...new Set(CATEGORIES[category] || [])];
+// If category is All, also include all feeds from other categories
+if (category === 'All') {
+Object.keys(CATEGORIES).forEach(cat => {
+if (cat !== 'All') CATEGORIES[cat].forEach(f => feedUrls.push(f));
+});
+}
+// remove placeholders and duplicates
+const unique = Array.from(new Set(feedUrls)).filter(f => f && f !== '#');
+if (!unique.length) {
+setStatus('no feeds configured');
+return [];
+}
+
+// fetch in parallel with Promise.allSettled
+const results = await Promise.allSettled(unique.map(u => fetchFeedUrl(u)));
+const all = [];
+results.forEach((r,i) => {
+if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+all.push(...r.value);
+} else {
+console.warn('Feed failed:', unique[i], r.reason);
+}
+});
+return mergeAndSort(all);
+}
+
+/* ========== Interactions & init ========== */
+
+let lastArticles = [];
+
+async function refreshNow() {
+const cat = q('#categorySelect').value;
+try {
+setStatus('loading feeds…');
+const articles = await fetchCategoryFeeds(cat);
+lastArticles = articles;
+renderArticles(articles);
+} catch (err) {
+console.error(err);
+setStatus('error');
+q('#feedList').innerHTML = `<div class="empty">Error fetching feeds. Open console for details.</div>`;
+}
+}
+
+/* Wire controls */
+function setupControls() {
+renderCategoryOptions();
+renderFeedSlots();
+renderSourceChips();
+
+q('#refreshBtn').addEventListener('click', refreshNow);
+q('#categorySelect').addEventListener('change', refreshNow);
+
+let searchTimer = null;
+q('#searchBox').addEventListener('input', e => {
+clearTimeout(searchTimer);
+const qstr = e.target.value.toLowerCase().trim();
+searchTimer = setTimeout(() => {
+if (!qstr) renderArticles(lastArticles);
+else {
+const filtered = lastArticles.filter(a => (a.title + ' ' + a.snippet + ' ' + a.source).toLowerCase().includes(qstr));
+renderArticles(filtered);
+}
+}, 250);
+});
+
+// refresh on load
+refreshNow();
+}
+
+/* Expose feed list in UI (and allow editing? Not now) */
+function initUI() {
+renderCategoryOptions();
+renderFeedSlots();
+renderSourceChips();
+setupControls();
+// keyboard shortcuts
+window.addEventListener('keydown', (e) => {
+if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+e.preventDefault(); refreshNow();
+}
+});
+}
+
+/* Helper: add seed feeds to a sensible category mapping */
+function autoAssignSeeds() {
+// try to heuristically assign the seed feeds to categories
+seedFeeds.forEach(s => {
+const h = extractHostname(s).toLowerCase();
+if (h.includes('forbes') || h.includes('bloomberg') || h.includes('ft')) {
+CATEGORIES['Finance'].push(s);
+} else if (h.includes('bbc') || h.includes('bmmagazine')) {
+CATEGORIES['Small Business'].push(s);
+} else {
+CATEGORIES['Global'].push(s);
+}
+// always add to All
+if (!CATEGORIES['All'].includes(s)) CATEGORIES['All'].push(s);
+});
+}
+
+/* Initialize */
+(function main(){
+// fill categories from config
+autoAssignSeeds();
+initUI();
+})();
+</script>
 </body>
 </html>
