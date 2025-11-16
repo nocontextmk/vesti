@@ -1,558 +1,586 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>BizPulse — Open Source Business RSS Aggregator</title>
-<meta name="description" content="Mobile-first business RSS aggregator (open-source) - lightweight, responsive, filterable." />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>deef - RSS News Aggregator</title>
+    <style>
+        /* Modern CSS Reset & Base Styles */
+        :root {
+            --text-primary: #000000;
+            --text-secondary: #444444;
+            --text-muted: #666666;
+            --background-primary: #ffffff;
+            --background-secondary: #f8f9fa;
+            --border-color: #eaeaea;
+            --accent-color: #1669d4;
+        }
 
-<style>
-/* ========== Mobile-first styles ========== */
-:root{
---bg: #ffffff;
---text: #111827;
---muted: #6b7280;
---accent: #0ea5a4;
---card: #f8fafc;
---max-width: 1100px;
---gap: 12px;
---radius: 10px;
---shadow: 0 6px 18px rgba(16,24,40,0.06);
-font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-.container{
-max-width:var(--max-width);
-margin:0 auto;
-padding:16px;
-}
+        /* System Font Stack for Cross-Browser Compatibility */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+                       Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--background-primary);
+            font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-/* Header */
-.header{
-display:flex;
-gap:12px;
-align-items:center;
-justify-content:space-between;
-margin-bottom:12px;
-}
-.brand{
-display:flex;
-gap:10px;
-align-items:center;
-}
-.logo{
-width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#0ea5a4,#06b6d4);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;box-shadow:var(--shadow)
-}
-.title{font-size:1.05rem;font-weight:600}
-.subtitle{font-size:0.8rem;color:var(--muted)}
+        /* Layout Components */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-/* Controls */
-.controls{display:flex;gap:8px;align-items:center}
-.select, .search {
-padding:8px 10px;border-radius:8px;border:1px solid #e6e9ee;background:white;font-size:0.95rem;
-min-width:120px;
-}
-.btn {
-border:0;padding:9px 12px;border-radius:8px;background:var(--accent);color:white;font-weight:600;
-display:inline-flex;gap:8px;align-items:center;cursor:pointer;
-}
+        /* Ultra Slim Header */
+        .header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.3rem 0;
+            margin-bottom: 1rem;
+        }
 
-/* Layout: feed list (left) and reader (right) - single column on mobile */
-.layout{
-display:grid;
-grid-template-columns: 1fr;
-gap:var(--gap);
-}
+        .logo {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
 
-/* Feed list card */
-.feed-card{
-background:var(--card);
-border-radius:var(--radius);
-padding:10px;
-box-shadow:var(--shadow);
-}
-.feed-list{
-display:flex;
-flex-direction:column;
-gap:8px;
-max-height:60vh;
-overflow:auto;
-padding-right:4px;
-}
-.article{
-display:flex;
-gap:10px;
-padding:8px;
-border-radius:8px;
-cursor:pointer;
-align-items:flex-start;
-transition:background .12s ease;
-}
-.article:hover{background:rgba(14,165,164,0.05)}
-.article .meta{font-size:12px;color:var(--muted)}
-.article .title{font-weight:600;font-size:0.98rem;margin-bottom:4px}
-.article .excerpt{font-size:0.9rem;color:var(--muted);line-height:1.2;}
+        .logo-subtitle {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
 
-/* Reader pane */
-.reader{
-background:linear-gradient(180deg,white, #fbfdff);
-border-radius:var(--radius);
-padding:12px;
-box-shadow:var(--shadow);
-}
-.reader h2{margin:0 0 6px 0}
-.reader .source{font-size:13px;color:var(--muted);margin-bottom:10px}
-.reader .content{font-size:0.98rem;line-height:1.45;color:var(--text)}
-.reader .open-link{display:inline-block;margin-top:12px;padding:8px 10px;border-radius:8px;border:1px solid #e6eef0;background:white;color:var(--accent);text-decoration:none;font-weight:600}
+        /* Main Content */
+        .main-content {
+            flex: 1;
+        }
 
-/* Tiny tag */
-.tag{
-display:inline-block;padding:6px 8px;border-radius:999px;font-size:12px;background:rgba(14,165,164,0.08);color:var(--accent);border:1px solid rgba(14,165,164,0.12);font-weight:600;margin-right:6px
-}
+        /* News List - Minimalist Style */
+        .news-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
 
-/* Empty state */
-.empty{padding:18px;text-align:center;color:var(--muted)}
+        .news-item {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: background-color 0.1s ease;
+        }
 
-/* Responsive — tablet and up: two-column layout */
-@media(min-width:800px){
-.layout{grid-template-columns: 380px 1fr}
-.feed-list{max-height:75vh}
-}
+        .news-item:hover {
+            background-color: var(--background-secondary);
+        }
 
-/* Large desktop: show cards centered */
-@media(min-width:1200px){
-.container{padding:24px}
-}
-</style>
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-title {
+            font-size: 1.125rem;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .news-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .news-source {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .news-time {
+            color: var(--text-muted);
+        }
+
+        .news-domain {
+            background: var(--background-secondary);
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--background-secondary);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-section {
+            margin-bottom: 1rem;
+        }
+
+        .footer-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Typography */
+        @media (max-width: 768px) {
+            body {
+                font-size: 15px;
+            }
+            
+            .container {
+                padding: 0 16px;
+            }
+            
+            .header {
+                padding: 0.25rem 0;
+                margin-bottom: 1rem;
+            }
+            
+            .logo {
+                font-size: 0.9rem;
+            }
+            
+            .news-item {
+                padding: 1.25rem 0;
+            }
+            
+            .news-title {
+                font-size: 1.0625rem;
+                line-height: 1.375;
+            }
+            
+            .news-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.375rem;
+            }
+
+            .footer {
+                padding: 1rem 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .header {
+                padding: 0.2rem 0;
+            }
+            
+            .logo {
+                font-size: 0.85rem;
+            }
+            
+            .logo-subtitle {
+                font-size: 0.65rem;
+            }
+            
+            .news-title {
+                font-size: 1rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="container" id="app">
-<div class="header">
-<div class="brand">
-<div class="logo">BP</div>
-<div>
-<div class="title">BizPulse</div>
-<div class="subtitle">Open-source business & tech RSS aggregator — mobile-first</div>
-</div>
-</div>
+    <header class="header">
+        <div class="container">
+            <div class="logo">deef</div>
+            <div class="logo-subtitle">minimal rss reader</div>
+        </div>
+    </header>
 
-<div class="controls">
-<select id="categorySelect" class="select" aria-label="Category">
-<!-- categories (prepopulated in JS too) -->
-</select>
+    <main class="main-content">
+        <div class="container">
+            <div class="news-list" id="newsList">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading latest news...</div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-<input id="searchBox" class="search" placeholder="Search headlines..." />
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <strong>Legal Disclaimer & Protection:</strong>
+                <p>
+                    deef is an <strong>open-source, non-profit educational project</strong> developed for personal learning purposes only. 
+                    This application aggregates publicly available RSS feeds and displays them in a minimal, readable format.
+                </p>
+            </div>
 
-<button id="refreshBtn" class="btn" title="Refresh feeds">Refresh</button>
-</div>
-</div>
+            <div class="footer-section">
+                <strong>Copyright & Content Protection:</strong>
+                <p>
+                    • All RSS feed content belongs to their respective publishers and copyright holders<br>
+                    • deef does not claim ownership over any news content or articles<br>
+                    • This project merely displays headlines and links to original sources<br>
+                    • No content is hosted, stored, or modified by deef<br>
+                    • All trademarks and registered trademarks are property of their respective owners
+                </p>
+            </div>
 
-<div class="layout">
-<!-- Left: feed list -->
-<div class="feed-card" aria-live="polite">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-<strong>Articles</strong>
-<small id="status" class="subtitle">loading…</small>
-</div>
+            <div class="footer-section">
+                <strong>Content Removal Requests:</strong>
+                <p>
+                    If you are a content owner and wish to have your RSS feed removed from this aggregator, 
+                    please contact me via GitHub. I respect intellectual property rights and will promptly 
+                    address legitimate removal requests.
+                </p>
+            </div>
 
-<div id="feedSlots" style="margin-bottom:8px;color:var(--muted);font-size:13px">
-<!-- show feed slots & edit hints -->
-</div>
+            <div class="footer-section">
+                <strong>Open Source & Educational Purpose:</strong>
+                <p>
+                    This is an open-source project built for educational purposes. The code is available 
+                    for learning and non-commercial use. deef generates no revenue and operates as a 
+                    personal learning project.
+                </p>
+                
+                <div class="footer-links">
+                    <a href="https://github.com/your-username/deef" target="_blank" rel="noopener">
+                        View Source Code on GitHub
+                    </a>
+                    <a href="https://github.com/your-username" target="_blank" rel="noopener">
+                        Contact via GitHub Profile
+                    </a>
+                </div>
+            </div>
 
-<div id="feedList" class="feed-list">
-<!-- articles will be injected here -->
-</div>
+            <div class="footer-section">
+                <p>
+                    &copy; 2025 deef RSS Aggregator. Built with educational intent. 
+                    All external content rights reserved by original publishers.
+                </p>
+            </div>
+        </div>
+    </footer>
 
-<div style="margin-top:10px;font-size:12px;color:var(--muted)">
-<div style="margin-bottom:6px"><strong>Sources:</strong> (proxied) — to protect URLs replace proxy with your own server.</div>
-<div style="display:flex;gap:6px;flex-wrap:wrap" id="sourceChips"></div>
-</div>
-</div>
+    <script>
+        // RSS feeds configuration
+        const rssFeeds = [
+            {
+                url: "https://feeds.bbci.co.uk/news/business/rss.xml",
+                name: "BBC Business",
+                copyright: "Content copyright © BBC"
+            },
+            {
+                url: "https://www.forbes.com/business/feed", 
+                name: "Forbes Business",
+                copyright: "Content copyright © Forbes"
+            },
+            {
+                url: "https://bmmagazine.co.uk/in-business/feed",
+                name: "BM Magazine", 
+                copyright: "Content copyright © BM Magazine"
+            }
+        ];
 
-<!-- Right: reader -->
-<div class="reader" id="readerPane">
-<div id="readerEmpty" class="empty">
-<div style="font-weight:700;margin-bottom:8px">No article selected</div>
-<div>Tap an article to read a preview. On larger screens you'll see list + detail side-by-side.</div>
-</div>
+        // Multiple CORS proxies for better reliability and speed
+        const corsProxies = [
+            "https://api.allorigins.win/raw?url=",
+            "https://corsproxy.io/?",
+            "https://api.codetabs.com/v1/proxy?quest="
+        ];
 
-<article id="readerContent" style="display:none">
-<div id="readerTags" style="margin-bottom:8px"></div>
-<h2 id="readerTitle"></h2>
-<div class="source" id="readerSource"></div>
-<div class="content" id="readerBody"></div>
-<a id="readerLink" class="open-link" target="_blank" rel="noopener">Open original</a>
-</article>
-</div>
-</div>
-</div>
+        // Get the fastest available proxy
+        function getFastestProxy() {
+            return corsProxies[0]; // Start with first proxy, will failover if needed
+        }
 
-<script>
-/*
-BizPulse - single-file frontend RSS aggregator
-- Mobile-first responsive UI
-- Feeds are proxied via ALLORIGINS by default (replace PROXY_URL to use your own proxy)
-- Only front-end languages (HTML/CSS/JS), ready for GitHub Pages
-*/
+        // Simple cache to avoid re-fetching
+        const feedCache = new Map();
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-/* ========== Config ========== */
+        // Format relative time
+        function formatTime(date) {
+            const now = new Date();
+            const diff = now - date;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor(diff / (1000 * 60));
+            
+            if (minutes < 1) return 'just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            return date.toLocaleDateString();
+        }
 
-/*
-* IMPORTANT: For better privacy/protection of source URLs, host your own simple proxy:
-* e.g. /proxy?url=<encoded-rss-url> that fetches the RSS server-side and returns the XML.
-* For development you can keep using ALLORIGINS, but note that feed URLs included in JS are visible client-side.
-*/
-const PROXY_URL = 'https://api.allorigins.win/raw?url='; // default proxy - change to your own proxy for production
+        // Fast XML parser - optimized version
+        function parseRSS(xml, sourceName) {
+            const items = [];
+            
+            // Use regex for faster parsing than DOMParser for simple RSS
+            const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+            const entryRegex = /<entry>([\s\S]*?)<\/entry>/gi;
+            
+            let matches = xml.match(itemRegex) || xml.match(entryRegex) || [];
+            
+            for (let match of matches) {
+                try {
+                    // Fast title extraction
+                    let titleMatch = match.match(/<title>([\s\S]*?)<\/title>/i);
+                    let title = titleMatch ? titleMatch[1].replace(/<![^>]*>/g, '').trim() : 'No title';
+                    
+                    // Fast link extraction
+                    let linkMatch = match.match(/<link[^>]*>([\s\S]*?)<\/link>|<link[^>]*href="([^"]*)"/i);
+                    let link = '#';
+                    if (linkMatch) {
+                        link = linkMatch[2] || linkMatch[1] || '#';
+                    }
+                    
+                    // Fast date extraction
+                    let dateMatch = match.match(/<(pubDate|published|updated|date)>([\s\S]*?)<\/\1>/i);
+                    let pubDate = dateMatch ? new Date(dateMatch[2]) : new Date();
+                    
+                    // Extract domain
+                    let domain = 'Source';
+                    try {
+                        domain = new URL(link).hostname.replace('www.', '').split('.')[0];
+                    } catch (e) {
+                        domain = sourceName;
+                    }
+                    
+                    items.push({
+                        title: title.substring(0, 200), // Limit title length
+                        link,
+                        pubDate,
+                        source: sourceName,
+                        domain
+                    });
+                    
+                    // Limit items per feed for performance
+                    if (items.length >= 15) break;
+                    
+                } catch (e) {
+                    console.log('Error parsing item:', e);
+                }
+            }
+            
+            return items;
+        }
 
-/* Categories + feeds
-Fill '#' slots with real RSS URLs later. Each slot is an array of feed URLs for that category.
-*/
-const CATEGORIES = {
-"All": [
-// global aggregator: add important feeds here
-// We'll add the user's seeds below programmatically
-],
-"Startups": ["#"],
-"Small Business": ["#"],
-"Tech (business)": ["#"],
-"Finance": ["#"],
-"Funding / VC": ["#"],
-"Management & Ops": ["#"],
-"Europe / Local": ["#"],
-"Global": ["#"]
-};
+        // Fast fetch with timeout and retry
+        async function fetchWithTimeout(url, timeout = 8000) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.text();
+            } catch (error) {
+                clearTimeout(timeoutId);
+                throw error;
+            }
+        }
 
-/* Add user's initial feeds (they will appear in 'All' and can be assigned to categories later) */
-const seedFeeds = [
-"https://feeds.bbci.co.uk/news/business/rss.xml",
-"https://www.forbes.com/business/feed",
-"https://bmmagazine.co.uk/in-business/feed"
-];
-// place seeds into 'All'
-CATEGORIES["All"].push(...seedFeeds);
+        // Fetch individual feed with caching
+        async function fetchFeed(feed, proxyIndex = 0) {
+            const cacheKey = `${feed.url}_${new Date().toDateString()}`;
+            const cached = feedCache.get(cacheKey);
+            
+            if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+                return cached.data;
+            }
+            
+            try {
+                const proxy = corsProxies[proxyIndex] || corsProxies[0];
+                const feedUrl = `${proxy}${encodeURIComponent(feed.url)}`;
+                const text = await fetchWithTimeout(feedUrl, 5000);
+                const items = parseRSS(text, feed.name);
+                
+                // Cache successful result
+                feedCache.set(cacheKey, {
+                    timestamp: Date.now(),
+                    data: items
+                });
+                
+                return items;
+            } catch (error) {
+                console.error(`Error fetching ${feed.name} with proxy ${proxyIndex}:`, error);
+                
+                // Try next proxy
+                if (proxyIndex < corsProxies.length - 1) {
+                    return fetchFeed(feed, proxyIndex + 1);
+                }
+                
+                // Return empty array on complete failure
+                return [];
+            }
+        }
 
-/* Settings */
-const MAX_ARTICLES = 80; // cap to keep UI snappy
-const FETCH_TIMEOUT = 15000; // ms
+        // Create news item HTML
+        function createNewsItem(article) {
+            const timeAgo = formatTime(article.pubDate);
+            
+            return `
+                <a href="${article.link}" target="_blank" rel="noopener" class="news-item">
+                    <div class="news-title">${article.title}</div>
+                    <div class="news-meta">
+                        <span class="news-source">${article.source}</span>
+                        <span class="news-time">${timeAgo}</span>
+                        <span class="news-domain">${article.domain}</span>
+                    </div>
+                </a>
+            `;
+        }
 
-/* ========== Utilities ========== */
+        // Progressive loading - show items as they come
+        function displayNewsItem(article, newsList) {
+            const itemHTML = createNewsItem(article);
+            newsList.innerHTML += itemHTML;
+        }
 
-function q(sel, root = document) { return root.querySelector(sel) }
-function qa(sel, root = document) { return Array.from(root.querySelectorAll(sel)) }
+        // Load all feeds in parallel with progressive rendering
+        async function loadAllFeeds() {
+            const newsList = document.getElementById('newsList');
+            
+            try {
+                // Clear and show loading for first load
+                if (!newsList.classList.contains('loading-started')) {
+                    newsList.classList.add('loading-started');
+                } else {
+                    // For subsequent loads, clear and show loading indicator
+                    newsList.innerHTML = `
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <div>Refreshing news...</div>
+                        </div>
+                    `;
+                }
+                
+                // Start all fetches in parallel
+                const feedPromises = rssFeeds.map(feed => fetchFeed(feed));
+                
+                // Clear news list for new content
+                newsList.innerHTML = '';
+                
+                // Process each feed as it completes
+                for (let i = 0; i < feedPromises.length; i++) {
+                    try {
+                        const articles = await feedPromises[i];
+                        articles.forEach(article => {
+                            displayNewsItem(article, newsList);
+                        });
+                    } catch (error) {
+                        console.error(`Feed ${rssFeeds[i].name} failed:`, error);
+                    }
+                }
+                
+                // Sort all items by date (optional - removes progressive feel but better organization)
+                setTimeout(() => {
+                    const items = Array.from(newsList.children);
+                    if (items.length > 0) {
+                        items.sort((a, b) => {
+                            const timeA = a.querySelector('.news-time').textContent;
+                            const timeB = b.querySelector('.news-time').textContent;
+                            return timeB.localeCompare(timeA);
+                        });
+                        
+                        // Re-append sorted items
+                        items.forEach(item => newsList.appendChild(item));
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error loading feeds:', error);
+                newsList.innerHTML = '<div class="loading">Error loading news feeds</div>';
+            }
+        }
 
-function setStatus(text){ q('#status').textContent = text }
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllFeeds();
+            
+            // Fast auto-refresh every 3 minutes
+            setInterval(loadAllFeeds, 3 * 60 * 1000);
+        });
 
-/* Safe fetch with timeout */
-async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
-const controller = new AbortController();
-const id = setTimeout(() => controller.abort(), timeout);
-try {
-const res = await fetch(url, { signal: controller.signal });
-clearTimeout(id);
-if (!res.ok) throw new Error('Network error: ' + res.status);
-const txt = await res.text();
-return txt;
-} catch (err) {
-clearTimeout(id);
-throw err;
-}
-}
-
-/* Parse RSS / Atom generically into unified article objects */
-function parseFeed(xmlText, feedUrl) {
-try {
-const parser = new DOMParser();
-const doc = parser.parseFromString(xmlText, "text/xml");
-// detect items (rss) vs entries (atom)
-const items = doc.querySelectorAll("item, entry");
-const channelTitle = (doc.querySelector("channel > title") || doc.querySelector("feed > title"))?.textContent || extractHostname(feedUrl);
-const articles = [];
-items.forEach(it => {
-const title = (it.querySelector("title") || {}).textContent || "No title";
-const linkNode = it.querySelector("link");
-let link = "";
-if (linkNode) {
-link = linkNode.getAttribute('href') || linkNode.textContent || "";
-} else {
-const guid = it.querySelector("guid");
-link = guid ? guid.textContent : "";
-}
-const pub = (it.querySelector("pubDate") || it.querySelector("published") || it.querySelector("updated"))?.textContent;
-const isoDate = pub ? new Date(pub) : null;
-const description = (it.querySelector("description") || it.querySelector("summary") || it.querySelector("content"))?.textContent || "";
-const clean = sanitizeHTML(description);
-articles.push({
-title: cleanText(title),
-link: link || feedUrl,
-isoDate: isoDate ? isoDate.toISOString() : null,
-source: channelTitle,
-snippet: getSnippet(clean),
-raw: description,
-feedUrl
-});
-});
-return articles;
-} catch (err) {
-console.warn("Parse error for", feedUrl, err);
-return [];
-}
-}
-
-function sanitizeHTML(html) {
-// Basic sanitize: remove script/style tags and decode HTML entities by using DOM
-if (!html) return "";
-const parser = new DOMParser();
-const doc = parser.parseFromString(html, "text/html");
-// remove scripts/styles
-qa('script, style', doc).forEach(n => n.remove());
-// get text content with some simple line breaks
-return doc.body.textContent || "";
-}
-
-function cleanText(t) { return (t||"").replace(/\s+/g,' ').trim() }
-function getSnippet(text, len = 220) {
-const s = cleanText(text).replace(/\s+/g,' ');
-return s.length > len ? s.slice(0,len).trim() + '…' : s;
-}
-function extractHostname(url){
-try{ return (new URL(url)).hostname }catch(e){return url}
-}
-
-/* Merge, dedupe by link/title, sort by date descending */
-function mergeAndSort(allArticles) {
-const map = new Map();
-allArticles.forEach(a => {
-const key = (a.link || a.title).slice(0,400);
-if (!map.has(key)) map.set(key, a);
-});
-const arr = Array.from(map.values());
-arr.sort((a,b) => {
-if (a.isoDate && b.isoDate) return new Date(b.isoDate) - new Date(a.isoDate);
-if (a.isoDate) return -1;
-if (b.isoDate) return 1;
-return 0;
-});
-return arr.slice(0, MAX_ARTICLES);
-}
-
-/* ========== UI rendering ========== */
-
-function renderCategoryOptions() {
-const sel = q('#categorySelect');
-sel.innerHTML = '';
-Object.keys(CATEGORIES).forEach(cat => {
-const opt = document.createElement('option');
-opt.value = cat;
-opt.textContent = cat;
-sel.appendChild(opt);
-});
-}
-
-function renderFeedSlots() {
-const container = q('#feedSlots');
-container.innerHTML = '';
-Object.keys(CATEGORIES).forEach(cat => {
-const feeds = CATEGORIES[cat];
-const div = document.createElement('div');
-div.style.marginBottom='6px';
-div.innerHTML = `<strong>${cat}</strong> — ${feeds.map(f => {
-return `<small style="margin-left:6px;color:${f==='#'?'#b91c1c':'var(--muted)'}">${f==='#'?'(empty)':'(configured)'}</small>`;
-}).join(' ')}`;
-container.appendChild(div);
-});
-}
-
-function renderSourceChips() {
-const chipWrap = q('#sourceChips');
-chipWrap.innerHTML = '';
-const all = new Set();
-Object.values(CATEGORIES).flat().forEach(f => { if(f && f!=='#') all.add(f) });
-Array.from(all).slice(0,12).forEach(url => {
-const el = document.createElement('div');
-el.style.padding='6px 8px';
-el.style.border='1px solid #e6eef0';
-el.style.borderRadius='999px';
-el.style.fontSize='13px';
-el.style.color='var(--muted)';
-el.textContent = extractHostname(url);
-chipWrap.appendChild(el);
-});
-}
-
-/* Render article list */
-function renderArticles(articles) {
-const list = q('#feedList');
-list.innerHTML = '';
-if (!articles.length) {
-list.innerHTML = `<div class="empty">No articles found. Try Refresh or choose another category.</div>`;
-setStatus('no articles');
-return;
-}
-setStatus(articles.length + ' items');
-articles.forEach((a, idx) => {
-const item = document.createElement('div');
-item.className = 'article';
-item.tabIndex = 0;
-item.dataset.index = idx;
-item.innerHTML = `
-<div style="flex:1">
-<div class="title">${escapeHtml(a.title)}</div>
-<div class="meta">${a.source} • ${a.isoDate ? new Date(a.isoDate).toLocaleString() : 'unknown time'}</div>
-<div class="excerpt">${escapeHtml(a.snippet)}</div>
-</div>
-`;
-item.addEventListener('click', () => showArticle(a));
-item.addEventListener('keydown', (e)=>{ if(e.key==='Enter') showArticle(a) });
-list.appendChild(item);
-});
-}
-
-/* Reader display */
-function showArticle(a) {
-q('#readerEmpty').style.display = 'none';
-const art = q('#readerContent');
-art.style.display = 'block';
-q('#readerTags').innerHTML = `<span class="tag">${a.source}</span>`;
-q('#readerTitle').textContent = a.title;
-q('#readerSource').textContent = `${a.source} • ${a.isoDate ? new Date(a.isoDate).toLocaleString() : ''}`;
-q('#readerBody').textContent = a.snippet + (a.raw ? '\n\n' + sanitizeHTML(a.raw).slice(0,2000) : '');
-q('#readerLink').href = a.link;
-}
-
-/* small HTML escaping helper */
-function escapeHtml(s){
-return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-}
-
-/* ========== Fetching logic ========== */
-
-async function fetchFeedUrl(rawUrl) {
-// Skip empty placeholders
-if (!rawUrl || rawUrl === '#') return [];
-try {
-const proxied = PROXY_URL + encodeURIComponent(rawUrl);
-const text = await fetchWithTimeout(proxied);
-const articles = parseFeed(text, rawUrl);
-return articles;
-} catch (err) {
-console.warn('Failed to fetch', rawUrl, err);
-return [];
-}
-}
-
-/* Fetch all feeds for a given category (or all) */
-async function fetchCategoryFeeds(category) {
-setStatus('fetching…');
-const feedUrls = [...new Set(CATEGORIES[category] || [])];
-// If category is All, also include all feeds from other categories
-if (category === 'All') {
-Object.keys(CATEGORIES).forEach(cat => {
-if (cat !== 'All') CATEGORIES[cat].forEach(f => feedUrls.push(f));
-});
-}
-// remove placeholders and duplicates
-const unique = Array.from(new Set(feedUrls)).filter(f => f && f !== '#');
-if (!unique.length) {
-setStatus('no feeds configured');
-return [];
-}
-
-// fetch in parallel with Promise.allSettled
-const results = await Promise.allSettled(unique.map(u => fetchFeedUrl(u)));
-const all = [];
-results.forEach((r,i) => {
-if (r.status === 'fulfilled' && Array.isArray(r.value)) {
-all.push(...r.value);
-} else {
-console.warn('Feed failed:', unique[i], r.reason);
-}
-});
-return mergeAndSort(all);
-}
-
-/* ========== Interactions & init ========== */
-
-let lastArticles = [];
-
-async function refreshNow() {
-const cat = q('#categorySelect').value;
-try {
-setStatus('loading feeds…');
-const articles = await fetchCategoryFeeds(cat);
-lastArticles = articles;
-renderArticles(articles);
-} catch (err) {
-console.error(err);
-setStatus('error');
-q('#feedList').innerHTML = `<div class="empty">Error fetching feeds. Open console for details.</div>`;
-}
-}
-
-/* Wire controls */
-function setupControls() {
-renderCategoryOptions();
-renderFeedSlots();
-renderSourceChips();
-
-q('#refreshBtn').addEventListener('click', refreshNow);
-q('#categorySelect').addEventListener('change', refreshNow);
-
-let searchTimer = null;
-q('#searchBox').addEventListener('input', e => {
-clearTimeout(searchTimer);
-const qstr = e.target.value.toLowerCase().trim();
-searchTimer = setTimeout(() => {
-if (!qstr) renderArticles(lastArticles);
-else {
-const filtered = lastArticles.filter(a => (a.title + ' ' + a.snippet + ' ' + a.source).toLowerCase().includes(qstr));
-renderArticles(filtered);
-}
-}, 250);
-});
-
-// refresh on load
-refreshNow();
-}
-
-/* Expose feed list in UI (and allow editing? Not now) */
-function initUI() {
-renderCategoryOptions();
-renderFeedSlots();
-renderSourceChips();
-setupControls();
-// keyboard shortcuts
-window.addEventListener('keydown', (e) => {
-if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
-e.preventDefault(); refreshNow();
-}
-});
-}
-
-/* Helper: add seed feeds to a sensible category mapping */
-function autoAssignSeeds() {
-// try to heuristically assign the seed feeds to categories
-seedFeeds.forEach(s => {
-const h = extractHostname(s).toLowerCase();
-if (h.includes('forbes') || h.includes('bloomberg') || h.includes('ft')) {
-CATEGORIES['Finance'].push(s);
-} else if (h.includes('bbc') || h.includes('bmmagazine')) {
-CATEGORIES['Small Business'].push(s);
-} else {
-CATEGORIES['Global'].push(s);
-}
-// always add to All
-if (!CATEGORIES['All'].includes(s)) CATEGORIES['All'].push(s);
-});
-}
-
-/* Initialize */
-(function main(){
-// fill categories from config
-autoAssignSeeds();
-initUI();
-})();
-</script>
+        // Add quick refresh on visibility change (when user returns to tab)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                // Refresh if older than 5 minutes
+                const lastRefresh = feedCache.get('last_refresh');
+                if (!lastRefresh || (Date.now() - lastRefresh) > 5 * 60 * 1000) {
+                    loadAllFeeds();
+                    feedCache.set('last_refresh', Date.now());
+                }
+            }
+        });
+    </script>
 </body>
 </html>
